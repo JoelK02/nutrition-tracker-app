@@ -3,6 +3,7 @@ import { FaSearch, FaCog, FaBell } from 'react-icons/fa'
 
 const NutrientDonut = dynamic(() => import('./components/NutrientDonut'), { ssr: false })
 const WeightChart = dynamic(() => import('./components/WeightChart'), { ssr: false })
+import NutrientSummary from './components/NutrientComponent2';
 
 export default function Home() {
   const userName = "John"; // Replace with actual user name logic
@@ -32,16 +33,16 @@ export default function Home() {
 
       <div className="p-8 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold p-4 text-gray-800 border-b">Nutrient Summary</h2>
-            <div className="p-4">
-              <NutrientDonut />
-            </div>
+        <div className="bg-white rounded-lg shadow-md p-6 ml-10 mr-10"> 
+          <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Nutrient Summary</h2> 
+          <div className="flex justify-center">
+            <NutrientSummary />
           </div>
+        </div>
 
           <div className="bg-white rounded-lg shadow-md">
             <h2 className="text-xl font-semibold p-4 text-gray-800 border-b">Weight Progress</h2>
-            <div className="p-4">
+            <div className="p-4 ">
               <WeightChart />
             </div>
           </div>

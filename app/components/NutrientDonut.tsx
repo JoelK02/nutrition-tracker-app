@@ -1,54 +1,76 @@
-'use client';
-
 import React from 'react';
-import { PieChart, Pie, Cell } from 'recharts';
+import { Card, CardHeader, CardTitle, CardContent } from "./card";
 
-const COLORS = ['#00C49F', '#FFBB28', '#FF8042'];
-
-const data = [
-  { name: 'Protein', value: 56 },
-  { name: 'Carbs', value: 250 },
-  { name: 'Fats', value: 70 },
-];
-
-const NutrientDonut: React.FC = () => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+const CircularProgress = ({ value, maxValue, color, size, label }) => {
+  const percentage = (value / maxValue) * 100;
+  const strokeWidth = 17;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className="flex items-center justify-between max-w-2xl mx-auto">
-      <div>
-        <p className="text-4xl font-bold text-gray-800">{total}g</p>
-        <p className="text-sm text-green-500 mb-4">▲ 32.1%</p>
-        <div className="space-y-1">
-          {data.map((item, index) => (
-            <div key={item.name} className="flex items-center">
-              <div className={`w-3 h-3 rounded-full mr-2`} style={{ backgroundColor: COLORS[index] }}></div>
-              <span className="text-sm text-gray-600 mr-2">{item.name}</span>
-              <span className="text-sm font-semibold text-gray-800">{item.value}g</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="w-32 h-32">
-        <PieChart width={128} height={128}>
-          <Pie
-            data={data}
-            cx={64}
-            cy={64}
-            innerRadius={40}
-            outerRadius={60}
-            fill="#8884d8"
-            paddingAngle={5}
-            dataKey="value"
-          >
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-        </PieChart>
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#e6e6e6"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-lg font-bold">{value}g</span>
+        <span className="text-sm">{label}</span>
       </div>
     </div>
   );
 };
 
-export default NutrientDonut;
+const NutrientSummary = () => {
+  const data = [
+    { name: 'Protein', value: 75, color: '#4ade80', maxValue: 100 },
+    { name: 'Fats', value: 50, color: '#fbbf24', maxValue: 100 },
+    { name: 'Carbs', value: 225, color: '#22d3ee', maxValue: 300 },
+  ];
+
+  const totalCalories = (data[0].value * 4 + data[1].value * 9 + data[2].value * 4).toFixed(0);
+
+  return (
+    <Card className="w-full max-w-3xl border-none shadow-none">
+      <CardContent>
+        <div className="flex items-baseline space-x-2 mb-5 justify-center"> 
+          <span className="text-3xl font-bold">{totalCalories}</span> 
+          <span className="text-sm text-muted-foreground">calories</span> 
+        </div>
+        <div className="flex justify-between items-center">
+          {data.map((item, index) => (
+            <div key={index} className="flex flex-col items-center ">
+              <CircularProgress 
+                value={item.value} 
+                maxValue={item.maxValue} 
+                color={item.color} 
+                size={160} // Increased size
+                label={item.name}
+              />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default NutrientSummary;
