@@ -1,31 +1,99 @@
 import React from 'react';
-import { Card, CardContent } from "./card";
+import {
+  Label,
+  PolarGrid,
+  PolarRadiusAxis,
+  RadialBar,
+  RadialBarChart,
+} from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 
-const CircularProgress = ({ value, maxValue, size }) => {
-  const strokeWidth = 15;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const strokeDashoffset = circumference;
+export const description = "A radial chart with text";
 
+const chartData = [
+  { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
+];
+
+const chartConfig = {
+  visitors: {
+    label: "Visitors",
+  },
+  safari: {
+    label: "Safari",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig;
+
+const CircularProgress = () => {
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          fill="none"
-          stroke="#e5e5e5"
-          strokeWidth={strokeWidth}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-black">
-        <span className="text-4xl font-bold">{value}</span>
-        <span className="text-sm">of {maxValue} kcal</span>
-      </div>
-    </div>
+    <Card className="flex flex-col">
+      <CardContent className="flex-1 pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[250px]"
+        >
+          <RadialBarChart
+            data={chartData}
+            startAngle={0}
+            endAngle={250}
+            innerRadius={80}
+            outerRadius={110}
+          >
+            <PolarGrid
+              gridType="circle"
+              radialLines={false}
+              stroke="none"
+              className="first:fill-muted last:fill-background"
+              polarRadius={[86, 74]}
+            />
+            <RadialBar dataKey="visitors" background cornerRadius={10} />
+            <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+              <Label
+                content={({ viewBox }) => {
+                  if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                    return (
+                      <text
+                        x={viewBox.cx}
+                        y={viewBox.cy}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        <tspan
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          className="fill-foreground text-4xl font-bold"
+                        >
+                          {chartData[0].visitors.toLocaleString()}
+                        </tspan>
+                        <tspan
+                          x={viewBox.cx}
+                          y={(viewBox.cy || 0) + 24}
+                          className="fill-muted-foreground"
+                        >
+                          Calories
+                        </tspan>
+                      </text>
+                    );
+                  }
+                }}
+              />
+            </PolarRadiusAxis>
+          </RadialBarChart>
+        </ChartContainer>
+      </CardContent>
+      
+    </Card>
   );
 };
+
 
 const ProgressBar = ({ value, maxValue, color, label }) => (
   <div className="mb-4">
@@ -53,7 +121,7 @@ const NutrientSummary = () => {
 
   return (
     <Card className="w-full max-w-2xl bg-white text-black shadow-none border-none">
-      <CardContent className="ml-10 mr-10 p-8 pt-6">
+      <CardContent className="ml-10 mr-10 p-8 pt-6 shadow-none">
         <div className="flex items-center justify-between">
           <div className="w-1/2">
             <CircularProgress value={totalCalories} maxValue={maxCalories} size={200} />
