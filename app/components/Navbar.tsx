@@ -7,10 +7,10 @@ export default function Navbar() {
   return (
     <nav className="bg-white h-full p-4">
       {/* Logo or Title */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-center text-center pb-1">
         <Link href="/" className="text-green-600 justify-between font-bold text-2xl flex items-center flex left">
           
-          <div>NutriTrack</div>
+          <div className="items-center">NutriTrack</div>
           
         </Link>
       </div>

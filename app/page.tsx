@@ -25,25 +25,27 @@ export default function Home() {
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           </div>
           <div className="flex items-center space-x-4">
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
-              <FaCog />
+            {/* Larger buttons */}
+            <button className="p-4 text-gray-600 hover:bg-gray-100 rounded-full text-xl">
+              <FaCog size={24} /> {/* Increase icon size */}
             </button>
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
-              <FaBell />
+            <button className="p-4 text-gray-600 hover:bg-gray-100 rounded-full text-xl">
+              <FaBell size={24} /> {/* Increase icon size */}
             </button>
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
-              <FaUserCircle />
+            <button className="p-4 text-gray-600 hover:bg-gray-100 rounded-full text-xl">
+              <FaUserCircle size={24} /> {/* Increase icon size */}
             </button>
           </div>
         </div>
       </header>
+
 
       {/* Main Content */}
       <main className="p-4 sm:p-8 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Nutrient Summary Section */}
           <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Nutrient Summary</h2> 
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b text-center pb-2">Nutrient Summary</h2> 
             <div className="flex justify-center">
               <NutrientSummary />
             </div>

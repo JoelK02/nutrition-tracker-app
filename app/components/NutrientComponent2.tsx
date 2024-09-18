@@ -36,17 +36,21 @@ const CircularProgress = () => {
         data={chartData}
         startAngle={0}
         endAngle={250}
-        innerRadius="80%"
-        outerRadius="100%"
+        innerRadius="80%"  
+        outerRadius="100%" 
       >
         <PolarGrid
           gridType="circle"
           radialLines={false}
           stroke="none"
           className="first:fill-muted last:fill-background"
-          polarRadius={['86%', '74%']}
         />
-        <RadialBar dataKey="visitors" background cornerRadius={10} />
+        <RadialBar
+          dataKey="visitors"
+          background
+          cornerRadius={10}
+          barSize={30}  
+        />
         <PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
           <Label
             content={({ viewBox }) => {
@@ -119,6 +123,13 @@ const NutrientSummary = () => {
               <ProgressBar key={index} {...nutrient} label={nutrient.name} />
             ))}
           </div>
+        </div>
+
+        {/* Add Food Button */}
+        <div className="mt-7 flex justify-center">
+          <button className="px-6 py-3 bg-green-500 text-white font-semibold text-lg rounded-full hover:bg-green-600 transition duration-200">
+            Add Food
+          </button>
         </div>
       </CardContent>
     </Card>
