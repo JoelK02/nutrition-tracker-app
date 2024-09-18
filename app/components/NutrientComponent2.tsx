@@ -115,7 +115,7 @@ const NutrientSummary = () => {
     <Card className="w-full max-w-2xl bg-white text-black shadow-none border-none">
       <CardContent className="p-4 sm:p-6 shadow-none">
         <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between">
-          <div className="w-full sm:w-1/2 mb-6 sm:mb-0">
+          <div className="w-full sm:w-1/2 mb-3 sm:mb-0">
             <CircularProgress />
           </div>
           <div className="w-full sm:w-1/2 sm:pl-6">
