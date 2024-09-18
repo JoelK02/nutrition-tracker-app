@@ -1,7 +1,7 @@
 "use client"
 
 import dynamic from 'next/dynamic'
-import { FaSearch, FaCog, FaBell } from 'react-icons/fa'
+import { FaSearch, FaCog, FaBell, FaUserCircle } from 'react-icons/fa'
 
 const NutrientDonut = dynamic(() => import('./components/NutrientDonut'), { ssr: false })
 const WeightChart = dynamic(() => import('./components/WeightChart'), { ssr: false })
@@ -12,9 +12,10 @@ export default function Home() {
 
   return (
     <div className="bg-white min-h-screen">
+      {/* Header Section */}
       <header className="p-4 flex flex-col sm:flex-row justify-between items-center border-b">
         <h1 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">Welcome back, {userName}</h1>
-        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
           <div className="relative w-full sm:w-auto">
             <input
               type="text"
@@ -30,13 +31,17 @@ export default function Home() {
             <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
               <FaBell />
             </button>
-            <img src="/avatar.jpg" alt="User Avatar" className="w-10 h-10 rounded-full" />
+            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
+              <FaUserCircle />
+            </button>
           </div>
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="p-4 sm:p-8 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Nutrient Summary Section */}
           <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <h2 className="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">Nutrient Summary</h2> 
             <div className="flex justify-center">
@@ -44,6 +49,7 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Weight Progress Section */}
           <div className="bg-white rounded-lg shadow-md">
             <h2 className="text-xl font-semibold p-4 text-gray-800 border-b">Weight Progress</h2>
             <div className="p-4">
@@ -52,6 +58,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Recently Consumed Section */}
         <div className="bg-white rounded-lg shadow-md overflow-x-auto">
           <h2 className="text-xl font-semibold p-4 text-gray-800 border-b">Recently Consumed</h2>
           <div className="p-4">

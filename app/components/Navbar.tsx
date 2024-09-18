@@ -1,15 +1,21 @@
-import Link from 'next/link'
-import { FaHome, FaBullseye, FaUtensils, FaCog, FaChartLine } from 'react-icons/fa'
+"use client"
+
+import Link from 'next/link';
+import { FaHome, FaBullseye, FaUtensils, FaCog, FaChartLine } from 'react-icons/fa';
 
 export default function Navbar() {
   return (
-    <nav className="bg-green-50 h-screen w-64 fixed left-0 top-0 p-4 shadow-lg">
-      <div className="mb-8">
-        <Link href="/" className="text-green-600 font-bold text-2xl flex items-center">
-          <FaChartLine className="mr-2" />
-          NutriTrack
+    <nav className="bg-white h-full p-4">
+      {/* Logo or Title */}
+      <div className="flex justify-between items-center">
+        <Link href="/" className="text-green-600 justify-between font-bold text-2xl flex items-center flex left">
+          
+          <div>NutriTrack</div>
+          
         </Link>
       </div>
+
+      {/* Navigation Links */}
       <ul className="space-y-4">
         <NavItem href="/" icon={<FaHome />} text="Home" />
         <NavItem href="/goals" icon={<FaBullseye />} text="Goals" />
@@ -17,19 +23,19 @@ export default function Navbar() {
         <NavItem href="/settings" icon={<FaCog />} text="Settings" />
       </ul>
     </nav>
-  )
+  );
 }
 
-function NavItem({ href, icon, text, active = false }: { href: string, icon: React.ReactNode, text: string, active?: boolean }) {
+function NavItem({ href, icon, text }: { href: string, icon: React.ReactNode, text: string }) {
   return (
     <li>
-      <Link 
-        href={href} 
-        className={`flex items-center p-2 rounded-lg ${active ? 'bg-green-100 text-green-600' : 'text-gray-600 hover:bg-green-100'}`}
+      <Link
+        href={href}
+        className="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
       >
         <span className="mr-3">{icon}</span>
         {text}
       </Link>
     </li>
-  )
+  );
 }

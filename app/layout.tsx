@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from './components/Navbar';
+import NavbarWrapper from './components/NavWrapper'; // Import the new Client Component
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,9 +17,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <title>{metadata.title}</title>
+        <meta name="description" content={metadata.description} />
+      </head>
       <body className={`${inter.className} bg-white`}>
-        <Navbar />
-        <main className="ml-64">
+        <NavbarWrapper /> {/* Client Component that handles sidebar toggle */}
+        <main className="ml-0 sm:ml-64 p-4 sm:p-8 transition-all duration-300 ease-in-out">
           {children}
         </main>
       </body>
