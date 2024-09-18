@@ -17,10 +17,10 @@ export default function Navbar() {
 
       {/* Navigation Links */}
       <ul className="space-y-4">
-        <NavItem href="/" icon={<FaHome />} text="Home" />
-        <NavItem href="/goals" icon={<FaBullseye />} text="Goals" />
-        <NavItem href="/recipes" icon={<FaUtensils />} text="Recipes" />
-        <NavItem href="/settings" icon={<FaCog />} text="Settings" />
+        <NavItem href="/pages/home" icon={<FaHome />} text="Home" />
+        <NavItem href="/pages/goals" icon={<FaBullseye />} text="Goals" />
+        <NavItem href="/pages/recipes" icon={<FaUtensils />} text="Recipes" />
+        <NavItem href="/pages/settings" icon={<FaCog />} text="Settings" />
       </ul>
     </nav>
   );
