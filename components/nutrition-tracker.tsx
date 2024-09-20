@@ -1,10 +1,11 @@
-"use client"
+'use client'
 
 import React, { useState } from 'react'
 import { Menu, PieChart, Settings, BookOpen, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   Table,
@@ -15,12 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import NavItem from '../../components/NavItem'
-import CircularProgressBar from '../../components/CircularProgressBar'
-import NutrientBar from '../../components/NutrientBar'
-import NutrientCard from '../../components/NutrientCard'
-
-const generateWeekData = (startDate: Date) => {
+const generateWeekData = (startDate) => {
   return Array.from({ length: 7 }, (_, i) => {
     const date = new Date(startDate)
     date.setDate(date.getDate() + i)
@@ -38,12 +34,12 @@ const foodEntries = [
   { id: 4, type: 'Dinner', time: '19:00', calories: 650 },
 ]
 
-export default function NutritionTracker() {
+export function NutritionTrackerComponent() {
   const [currentWeekStart, setCurrentWeekStart] = useState(new Date('2023-09-14'))
   const [weeklyData, setWeeklyData] = useState(generateWeekData(currentWeekStart))
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
-  const changeWeek = (direction: 'prev' | 'next') => {
+  const changeWeek = (direction) => {
     const newDate = new Date(currentWeekStart)
     newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7))
     setCurrentWeekStart(newDate)
@@ -79,6 +75,11 @@ export default function NutritionTracker() {
 
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-auto">
+        {/* Mobile Header */}
+        <header className="md:hidden flex justify-center items-center mb-6">
+          <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
+        </header>
+
         {/* Today's Summary */}
         <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
           <h2 className="text-lg font-semibold mb-4">Today's Summary</h2>
@@ -160,6 +161,82 @@ export default function NutritionTracker() {
       >
         <Plus size={24} color="white" />
       </Button>
+    </div>
+  )
+}
+
+function NavItem({ icon, label, active = false }) {
+  return (
+    <div className={`flex flex-col items-center cursor-pointer ${active ? 'text-green-500' : 'text-gray-400'}`}>
+      {icon}
+      <span className="text-xs mt-1">{label}</span>
+    </div>
+  )
+}
+
+function NutrientBar({ label, value, max, color }) {
+  const percentage = (value / max) * 100
+  return (
+    <div className="mb-4">
+      <div className="flex justify-between text-sm mb-1">
+        <span>{label}</span>
+        <span>{value}g / {max}g</span>
+      </div>
+      <Progress value={percentage} className="h-2" indicatorClassName={color} />
+    </div>
+  )
+}
+
+function CircularProgressBar({ value, max }) {
+  const percentage = (value / max) * 100
+  const strokeWidth = 10
+  const radius = 70
+  const circumference = 2 * Math.PI * radius
+
+  return (
+    <div className="relative w-40 h-40">
+      <svg className="w-full h-full" viewBox="0 0 180 180">
+        <circle
+          className="text-gray-200"
+          strokeWidth={strokeWidth}
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx="90"
+          cy="90"
+        />
+        <circle
+          className="text-green-500"
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - (percentage / 100) * circumference}
+          strokeLinecap="round"
+          stroke="currentColor"
+          fill="transparent"
+          r={radius}
+          cx="90"
+          cy="90"
+          style={{
+            transition: 'stroke-dashoffset 0.5s ease 0s',
+            transform: 'rotate(-90deg)',
+            transformOrigin: '50% 50%',
+          }}
+        />
+      </svg>
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="text-3xl font-bold">{value}</div>
+        <div className="text-sm text-gray-500">/ {max} kcal</div>
+      </div>
+    </div>
+  )
+}
+
+function NutrientCard({ label, value, icon, color }) {
+  return (
+    <div className={`${color} p-3 rounded-lg`}>
+      <div className="text-2xl mb-1">{icon}</div>
+      <div className="text-sm text-gray-600">{label}</div>
+      <div className="text-xl font-semibold">{value}</div>
     </div>
   )
 }

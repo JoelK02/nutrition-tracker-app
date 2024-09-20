@@ -27,8 +27,8 @@ export default function RootLayout({
         <meta name="description" content="Yo mama" />
       </head>
       <body className={`${inter.className} bg-white`}>
-        {!isLandingPage && <NavbarWrapper />} {/* Render Navbar only if not on the landing page */}
-        <main className={`ml-0 sm:ml-64 p-4 sm:p-8 transition-all duration-300 ease-in-out`}>
+        
+        <main className={`ml-0 transition-all duration-300 ease-in-out`}>
           {children}
         </main>
       </body>
