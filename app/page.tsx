@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Menu, X, Facebook, Twitter, Instagram } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
@@ -32,9 +33,11 @@ export default function LandingPage() {
               </a>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
-              <button className="bg-green-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                Sign In
-              </button>
+              <Link href="/pages/sign-in">
+                <button className="bg-green-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                  Sign In
+                </button>
+              </Link>
             </div>
             <div className="-mr-2 flex items-center sm:hidden">
               <button
