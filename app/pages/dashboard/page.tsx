@@ -79,6 +79,11 @@ export default function NutritionTracker() {
 
       {/* Main Content */}
       <main className="flex-1 p-8 overflow-auto">
+        {/* Mobile Header */}
+        <header className="md:hidden flex justify-center items-center mb-6">
+          <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
+        </header>
+
         {/* Today's Summary */}
         <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
           <h2 className="text-lg font-semibold mb-4">Today's Summary</h2>
