@@ -16,7 +16,7 @@ export default function NutrientBar({ label, value, max, color }: NutrientBarPro
         <span>{label}</span>
         <span>{value}g / {max}g</span>
       </div>
-      <Progress value={percentage} className="h-2" indicatorClassName={color} />
+      <Progress value={percentage} className={`h-2 ${color}`} />
     </div>
   )
 }
