@@ -76,8 +76,9 @@ export default function LandingPage() {
             <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
               <div className="sm:text-center lg:text-left">
                 <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                  <span className="block xl:inline">Track your Nutrition,</span>{' '}
-                  <span className="block text-green-500 xl:inline">Reach your Fitness Goals</span>
+                  <span className="block xl:inline">Track your Nutrition,&quot;</span>{' '}
+                  <span className="block text-green-500 xl:inline">Reach your Fitness Goals&quot;</span>
+
                 </h1>
                 <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
                   Monitor your daily intake, set fitness goals, and get personalized insights.
@@ -194,7 +195,7 @@ export default function LandingPage() {
                     <div className="block mt-2">
                       <p className="text-xl font-semibold text-gray-900">Sarah M.</p>
                       <p className="mt-3 text-base text-gray-500">
-                        "NutriTrack helped me lose 20 pounds in 3 months by keeping me accountable for my daily calorie intake. The personalized insights were a game-changer!"
+                        &quot;NutriTrack helped me lose 20 pounds in 3 months by keeping me accountable for my daily calorie intake. The personalized insights were a game-changer!&quot;
                       </p>
                     </div>
                   </div>
@@ -226,7 +227,7 @@ export default function LandingPage() {
                     <div className="block mt-2">
                       <p className="text-xl font-semibold text-gray-900">Emily R.</p>
                       <p className="mt-3 text-base text-gray-500">
-                        "NutriTrack has made it so much easier to maintain a balanced diet. The weekly reports keep me motivated and on track with my health goals."
+                        &quot;NutriTrack has made it so much easier to maintain a balanced diet. The weekly reports keep me motivated and on track with my health goals.&quot;
                       </p>
                     </div>
                   </div>
