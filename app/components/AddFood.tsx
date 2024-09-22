@@ -1,11 +1,8 @@
-// components/AddFood.tsx
-
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Plus } from 'lucide-react';
-import { supabase } from '@/lib/supabaseClient'; // Import Supabase client
+import React, { useState } from 'react'
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Plus } from 'lucide-react'
 
 const AddFood = ({ foodEntries, setFoodEntries }) => {
   const [newFood, setNewFood] = useState({
@@ -16,91 +13,65 @@ const AddFood = ({ foodEntries, setFoodEntries }) => {
     carbs: '',
     fat: ''
   });
-  const [selectedImage, setSelectedImage] = useState<File | null>(null); // State for storing selected image
+  const [imageUrl, setImageUrl] = useState(''); // Store image URL
   const [loading, setLoading] = useState(false); // Loading state for processing
 
-  // Handle file input
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
-    }
-  };
+  // Handle image URL input
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewFood({ ...newFood, [name]: value });
+  }
 
-  // Function to upload the image and send it to ChatGPT for processing
   const handleImageUpload = async () => {
-    if (!selectedImage) {
-      alert('Please select an image.');
+    if (!imageUrl) {
+      alert('Please provide an image URL.');
       return;
     }
-    
+
     setLoading(true);
-  
-    const formData = new FormData();
-    formData.append('file', selectedImage);
-  
+
     try {
       const response = await fetch('/api/openai-image', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageUrl }) // Send image URL to API
       });
-  
+
       const result = await response.json();
-  
-      // Assuming GPT API returns nutrients or description
-      const { foodData } = result;
-  
-      console.log(foodData); // Here you can process the returned data
-  
-      // Example: Update form fields with detected food information
+      console.log('AI result:', result);
+
+      // Assuming the result contains food information and nutrients
+      const { type, calories, protein, carbs, fat } = result;
+
+      // Update form fields with the returned food information
       setNewFood({
-        ...newFood,
-        type: foodData.type || newFood.type,
-        calories: foodData.calories || '',
-        protein: foodData.protein || '',
-        carbs: foodData.carbs || '',
-        fat: foodData.fat || '',
+        type: type || newFood.type,
+        time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+        calories: calories || '',
+        protein: protein || '',
+        carbs: carbs || '',
+        fat: fat || '',
       });
-      
     } catch (error) {
       console.error('Error processing image:', error);
     } finally {
       setLoading(false);
     }
   }
-  
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewFood({ ...newFood, [name]: value });
-  };
 
   const handleAddFood = async () => {
-    // Simple validation to ensure fields are filled
-    if (!newFood.type || !newFood.time || !newFood.calories || !newFood.protein || !newFood.carbs || !newFood.fat) {
-      alert("Please fill in all fields before adding a food entry.");
-      return;
-    }
-
-    const parsedCalories = parseInt(newFood.calories, 10);
-    const parsedProtein = parseInt(newFood.protein, 10);
-    const parsedCarbs = parseInt(newFood.carbs, 10);
-    const parsedFat = parseInt(newFood.fat, 10);
-
-    if (isNaN(parsedCalories) || isNaN(parsedProtein) || isNaN(parsedCarbs) || isNaN(parsedFat)) {
-      alert("Please enter valid numbers for calories, protein, carbs, and fat.");
-      return;
-    }
-
+    // Add validation if needed
     const newEntry = {
       type: newFood.type,
       time: newFood.time,
-      calories: parsedCalories,
-      protein: parsedProtein,
-      carbs: parsedCarbs,
-      fat: parsedFat,
+      calories: newFood.calories,
+      protein: newFood.protein,
+      carbs: newFood.carbs,
+      fat: newFood.fat,
       created_at: new Date().toISOString(),
     };
 
+    // Assuming you already have Supabase client configured
     const { data, error } = await supabase
       .from("food_entries")
       .insert([newEntry])
@@ -109,7 +80,6 @@ const AddFood = ({ foodEntries, setFoodEntries }) => {
     if (error) {
       console.error("Error saving food entry:", error.message);
     } else {
-      console.log("Food entry saved:", data);
       setFoodEntries([...foodEntries, data[0]]);
       setNewFood({ type: "", time: "", calories: "", protein: "", carbs: "", fat: "" });
     }
@@ -164,9 +134,12 @@ const AddFood = ({ foodEntries, setFoodEntries }) => {
             value={newFood.fat} 
             onChange={handleInputChange} 
           />
-          
-          {/* File upload input */}
-          <input type="file" onChange={handleFileChange} />
+          <Input 
+            placeholder="Image URL" 
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)} // Handle image URL input
+          />
+
           <Button onClick={handleImageUpload} disabled={loading}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}
           </Button>
@@ -177,7 +150,7 @@ const AddFood = ({ foodEntries, setFoodEntries }) => {
         </div>
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
 export default AddFood;
