@@ -41,9 +41,9 @@ export default function AnalyticsSection() {
     const totalCarbs = weekEntries.reduce((sum, entry) => sum + entry.carbs, 0);
     const totalFat = weekEntries.reduce((sum, entry) => sum + entry.fat, 0);
 
-    const avgProtein = weekEntries.length ? totalProtein / weekEntries.length : 0;
-    const avgCarbs = weekEntries.length ? totalCarbs / weekEntries.length : 0;
-    const avgFat = weekEntries.length ? totalFat / weekEntries.length : 0;
+    const avgProtein = weekEntries.length ? Math.floor(totalProtein / weekEntries.length) : 0;
+  const avgCarbs = weekEntries.length ? Math.floor(totalCarbs / weekEntries.length) : 0;
+  const avgFat = weekEntries.length ? Math.floor(totalFat / weekEntries.length) : 0;
 
     // Update weekly chart data for calories
     const chartData = Array.from({ length: 7 }, (_, i) => {

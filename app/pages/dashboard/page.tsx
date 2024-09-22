@@ -24,6 +24,7 @@ import CircularProgressBar from '../../components/CircularProgressBar'
 import NutrientBar from '../../components/NutrientBar'
 import NutrientCard from '../../components/NutrientCard'
 import AnalyticsSection from '../../components/Analytics';
+import AddFood from '../../components/AddFood';
 
 
 const generateWeekData = (startDate: Date) => {
@@ -117,32 +118,51 @@ export default function NutritionTracker() {
   }
 
   const handleAddFood = async () => {
+    // Simple validation: Check if all required fields are filled and numeric values are valid
+    if (!newFood.type || !newFood.time || !newFood.calories || !newFood.protein || !newFood.carbs || !newFood.fat) {
+      alert("Please fill in all fields before adding a food entry.");
+      return; // Stop execution if validation fails
+    }
+  
+    // Ensure numeric fields (calories, protein, carbs, fat) are valid numbers
+    const parsedCalories = parseInt(newFood.calories, 10);
+    const parsedProtein = parseInt(newFood.protein, 10);
+    const parsedCarbs = parseInt(newFood.carbs, 10);
+    const parsedFat = parseInt(newFood.fat, 10);
+  
+    if (isNaN(parsedCalories) || isNaN(parsedProtein) || isNaN(parsedCarbs) || isNaN(parsedFat)) {
+      alert("Please enter valid numbers for calories, protein, carbs, and fat.");
+      return; // Stop execution if validation fails
+    }
+  
+    // Prepare the new entry
     const newEntry = {
       type: newFood.type,
       time: newFood.time,
-      calories: newFood.calories ? parseInt(newFood.calories, 10) : 0,
-      protein: newFood.protein ? parseInt(newFood.protein, 10) : 0,
-      carbs: newFood.carbs ? parseInt(newFood.carbs, 10) : 0,
-      fat: newFood.fat ? parseInt(newFood.fat, 10) : 0,
-      created_at: new Date().toISOString() // Ensure created_at is set to the current timestamp
-    }
-
-    // Insert into Supabase with 'representation' to return the inserted row
+      calories: parsedCalories,
+      protein: parsedProtein,
+      carbs: parsedCarbs,
+      fat: parsedFat,
+      created_at: new Date().toISOString(), // Ensure created_at is set to the current timestamp
+    };
+  
+    // Insert into Supabase
     const { data, error } = await supabase
-      .from('food_entries')
+      .from("food_entries")
       .insert([newEntry])
-      .select()  // This requests that the inserted row(s) be returned
+      .select(); // This requests that the inserted row(s) be returned
   
     if (error) {
-      console.error('Error saving food entry:', error.message)
+      console.error("Error saving food entry:", error.message);
     } else {
-      console.log('Food entry saved:', data)
+      console.log("Food entry saved:", data);
       // Update state with the new entry including created_at from Supabase
-      setFoodEntries([...foodEntries, data[0]])
+      setFoodEntries([...foodEntries, data[0]]);
       // Clear form
-      setNewFood({ type: '', time: '', calories: '', protein: '', carbs: '', fat: '' })
+      setNewFood({ type: "", time: "", calories: "", protein: "", carbs: "", fat: "" });
     }
-  }
+  };
+  
   
 
   const changeWeek = (direction: 'prev' | 'next') => {
@@ -236,61 +256,8 @@ export default function NutritionTracker() {
         </div>
       </main>
 
-      {/* Add Food Button and Popup */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button
-            className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg"
-            style={{ backgroundColor: '#10B981' }}
-          >
-            <Plus size={24} color="white" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogTitle>Add Food Entry</DialogTitle>
-          <div className="grid gap-4">
-            <Input 
-              placeholder="Meal Type (e.g. Breakfast)" 
-              name="type" 
-              value={newFood.type} 
-              onChange={handleInputChange}
-            />
-            <Input 
-              placeholder="Time (e.g. 08:00)" 
-              name="time" 
-              value={newFood.time} 
-              onChange={handleInputChange}
-            />
-            <Input 
-              placeholder="Calories" 
-              name="calories" 
-              value={newFood.calories} 
-              onChange={handleInputChange} 
-            />
-            <Input 
-              placeholder="Protein (g)" 
-              name="protein" 
-              value={newFood.protein} 
-              onChange={handleInputChange} 
-            />
-            <Input 
-              placeholder="Carbs (g)" 
-              name="carbs" 
-              value={newFood.carbs} 
-              onChange={handleInputChange} 
-            />
-            <Input 
-              placeholder="Fat (g)" 
-              name="fat" 
-              value={newFood.fat} 
-              onChange={handleInputChange} 
-            />
-            <Button onClick={handleAddFood} className="mt-4">
-              Add Food
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Use the new AddFood component */}
+      <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} />
     </div>
   )
 }
