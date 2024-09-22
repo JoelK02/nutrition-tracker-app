@@ -20,7 +20,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSignUp = async (e) => {
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (password !== passwordConfirm) {
       setError('Passwords do not match')
@@ -33,8 +33,6 @@ export default function Register() {
     const { error } = await supabase.auth.signUp({
       email,
       password
-    }, {
-      data: { full_name: name }
     })
 
     if (error) {
