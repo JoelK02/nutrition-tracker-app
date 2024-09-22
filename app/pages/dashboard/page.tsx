@@ -244,7 +244,7 @@ export default function NutritionTracker() {
               {foodEntries.map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell>{entry.type}</TableCell>
-                  <TableCell>{formatTimestamp(entry.created_at)}</TableCell>
+                  <TableCell>{formatTimestamp(entry.created_at.toString())}</TableCell>
                   <TableCell>{entry.calories}</TableCell>
                   <TableCell>{entry.protein}</TableCell>
                   <TableCell>{entry.carbs}</TableCell>

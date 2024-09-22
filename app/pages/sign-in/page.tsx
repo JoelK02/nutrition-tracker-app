@@ -16,7 +16,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false)
   const router = useRouter() // To handle redirects
 
-  const handleSignIn = async (e) => {
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError('')

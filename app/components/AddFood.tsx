@@ -3,21 +3,30 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Plus } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
 
-const AddFood = ({ foodEntries, setFoodEntries }) => {
-  const [newFood, setNewFood] = useState({
+interface FoodEntry {
+  type: string;
+  time: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], setFoodEntries: React.Dispatch<React.SetStateAction<FoodEntry[]>> }) => {
+  const [newFood, setNewFood] = useState<FoodEntry>({
     type: '',
     time: '',
-    calories: '',
-    protein: '',
-    carbs: '',
-    fat: ''
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0
   });
   const [imageUrl, setImageUrl] = useState(''); // Store image URL
   const [loading, setLoading] = useState(false); // Loading state for processing
-
   // Handle image URL input
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewFood({ ...newFood, [name]: value });
   }
@@ -81,7 +90,7 @@ const AddFood = ({ foodEntries, setFoodEntries }) => {
       console.error("Error saving food entry:", error.message);
     } else {
       setFoodEntries([...foodEntries, data[0]]);
-      setNewFood({ type: "", time: "", calories: "", protein: "", carbs: "", fat: "" });
+      setNewFood({ type: "", time: "", calories: 0, protein: 0, carbs: 0, fat: 0 });
     }
   };
 
