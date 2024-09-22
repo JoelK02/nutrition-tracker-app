@@ -82,7 +82,7 @@ export function NutritionTrackerComponent() {
 
         {/* Today's Summary */}
         <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-          <h2 className="text-lg font-semibold mb-4">Today's Summary</h2>
+          <h2 className="text-lg font-semibold mb-4">Today&apos;s Summary</h2>
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="mb-6 md:mb-0">
               <CircularProgressBar value={1750} max={2000} />
@@ -132,7 +132,7 @@ export function NutritionTrackerComponent() {
 
         {/* Food Entries */}
         <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">Today's Food Entries</h2>
+          <h2 className="text-lg font-semibold mb-4">Today&apos;s Food Entries</h2>
           <Table>
             <TableHeader>
               <TableRow>
