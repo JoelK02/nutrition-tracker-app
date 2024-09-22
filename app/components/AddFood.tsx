@@ -5,31 +5,37 @@ import { Button } from "@/components/ui/button"
 import { Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 
+// Update FoodEntry type to include id and created_at
 interface FoodEntry {
+  id: number;          // Add id to match database
   type: string;
   time: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
+  created_at: string | number;   // Add created_at to match the existing data
 }
 
 const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], setFoodEntries: React.Dispatch<React.SetStateAction<FoodEntry[]>> }) => {
-  const [newFood, setNewFood] = useState<FoodEntry>({
+  const [newFood, setNewFood] = useState<Omit<FoodEntry, 'id' | 'created_at'>>({
     type: '',
     time: '',
     calories: 0,
     protein: 0,
     carbs: 0,
-    fat: 0
+    fat: 0,
   });
+
   const [imageUrl, setImageUrl] = useState(''); // Store image URL
   const [loading, setLoading] = useState(false); // Loading state for processing
-  // Handle image URL input
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewFood({ ...newFood, [name]: value });
-  }
+    // Check if the field is a number and handle it accordingly
+    const isNumericField = ['calories', 'protein', 'carbs', 'fat'].includes(name);
+    setNewFood({ ...newFood, [name]: isNumericField ? parseInt(value, 10) || 0 : value });
+  };
 
   const handleImageUpload = async () => {
     if (!imageUrl) {
@@ -56,31 +62,25 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
       setNewFood({
         type: type || newFood.type,
         time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-        calories: calories || '',
-        protein: protein || '',
-        carbs: carbs || '',
-        fat: fat || '',
+        calories: calories || 0,
+        protein: protein || 0,
+        carbs: carbs || 0,
+        fat: fat || 0,
       });
     } catch (error) {
       console.error('Error processing image:', error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const handleAddFood = async () => {
-    // Add validation if needed
     const newEntry = {
-      type: newFood.type,
-      time: newFood.time,
-      calories: newFood.calories,
-      protein: newFood.protein,
-      carbs: newFood.carbs,
-      fat: newFood.fat,
-      created_at: new Date().toISOString(),
+      ...newFood,
+      id: Date.now(),  // Generate a temporary id for the new entry
+      created_at: new Date().toISOString(), // Use current date for created_at
     };
 
-    // Assuming you already have Supabase client configured
     const { data, error } = await supabase
       .from("food_entries")
       .insert([newEntry])
@@ -89,8 +89,8 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
     if (error) {
       console.error("Error saving food entry:", error.message);
     } else {
-      setFoodEntries([...foodEntries, data[0]]);
-      setNewFood({ type: "", time: "", calories: 0, protein: 0, carbs: 0, fat: 0 });
+      setFoodEntries([...foodEntries, data[0]]); // Append new entry to the list
+      setNewFood({ type: "", time: "", calories: 0, protein: 0, carbs: 0, fat: 0 }); // Reset form fields
     }
   };
 
@@ -159,7 +159,7 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
 export default AddFood;

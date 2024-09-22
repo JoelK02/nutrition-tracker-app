@@ -255,9 +255,9 @@ export default function NutritionTracker() {
           </Table>
         </div>
       </main>
-
+      
       {/* Use the new AddFood component */}
-      <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} />
+      {/* <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} /> */}
     </div>
   )
 }

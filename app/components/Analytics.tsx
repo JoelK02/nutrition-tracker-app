@@ -5,51 +5,63 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 
 import NutrientCard from '../components/NutrientCard';
 import { supabase } from '@/lib/supabaseClient';
 
-export default function AnalyticsSection() {
-  const [foodEntries, setFoodEntries] = useState([]);
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date());
-  const [weeklyData, setWeeklyData] = useState([]);
-  const [firstEntryDate, setFirstEntryDate] = useState(null);
+type FoodEntry = {
+  id: number;
+  type: string;
+  time: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  created_at: string;
+};
 
-  // Fetch data on component mount
+export default function AnalyticsSection() {
+  const [foodEntries, setFoodEntries] = useState<FoodEntry[]>([]);
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date());
+  const [weeklyData, setWeeklyData] = useState({
+    chartData: [],
+    avgProtein: 0,
+    avgCarbs: 0,
+    avgFat: 0,
+  });
+  const [firstEntryDate, setFirstEntryDate] = useState<Date | null>(null);
+
   useEffect(() => {
     const fetchFoodEntries = async () => {
       const { data, error } = await supabase.from('food_entries').select('*');
       if (error) {
         console.error('Error fetching food entries:', error.message);
-      } else {
+      } else if (data && data.length > 0) {
         setFoodEntries(data);
         const firstDate = new Date(data[0].created_at);
         setFirstEntryDate(firstDate);
-        setCurrentWeekStart(firstDate); // Set the first week start date to the date of the first entry
-        updateWeeklyData(firstDate, data); // Update weekly data
+        setCurrentWeekStart(firstDate);
+        updateWeeklyData(firstDate, data);
       }
     };
     fetchFoodEntries();
   }, []);
 
-  // Update weekly data for the chart and average calculations
-  const updateWeeklyData = (startDate, allEntries) => {
-    const weekEntries = allEntries.filter(entry => {
+  const updateWeeklyData = (startDate: Date, allEntries: FoodEntry[]) => {
+    const weekEntries = allEntries.filter((entry) => {
       const entryDate = new Date(entry.created_at);
       return entryDate >= startDate && entryDate < new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
     });
 
-    // Calculate averages
     const totalCalories = weekEntries.reduce((sum, entry) => sum + entry.calories, 0);
     const totalProtein = weekEntries.reduce((sum, entry) => sum + entry.protein, 0);
     const totalCarbs = weekEntries.reduce((sum, entry) => sum + entry.carbs, 0);
     const totalFat = weekEntries.reduce((sum, entry) => sum + entry.fat, 0);
 
     const avgProtein = weekEntries.length ? Math.floor(totalProtein / weekEntries.length) : 0;
-  const avgCarbs = weekEntries.length ? Math.floor(totalCarbs / weekEntries.length) : 0;
-  const avgFat = weekEntries.length ? Math.floor(totalFat / weekEntries.length) : 0;
+    const avgCarbs = weekEntries.length ? Math.floor(totalCarbs / weekEntries.length) : 0;
+    const avgFat = weekEntries.length ? Math.floor(totalFat / weekEntries.length) : 0;
 
-    // Update weekly chart data for calories
     const chartData = Array.from({ length: 7 }, (_, i) => {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
-      const dayEntries = weekEntries.filter(entry => {
+      const dayEntries = weekEntries.filter((entry) => {
         const entryDate = new Date(entry.created_at);
         return entryDate.toDateString() === date.toDateString();
       });
@@ -59,21 +71,19 @@ export default function AnalyticsSection() {
         calories: dayCalories,
       };
     });
-
     setWeeklyData({
-      chartData,
+      chartData: chartData as any,
       avgProtein,
       avgCarbs,
       avgFat,
     });
   };
 
-  // Handle week navigation
-  const changeWeek = (direction) => {
+  const changeWeek = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentWeekStart);
     newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
     setCurrentWeekStart(newDate);
-    updateWeeklyData(newDate, foodEntries); // Recalculate the weekly data for the new week
+    updateWeeklyData(newDate, foodEntries);
   };
 
   return (
