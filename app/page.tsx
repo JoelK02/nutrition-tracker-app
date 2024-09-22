@@ -211,7 +211,7 @@ export default function LandingPage() {
                     <div className="block mt-2">
                       <p className="text-xl font-semibold text-gray-900">Mike T.</p>
                       <p className="mt-3 text-base text-gray-500">
-                        "As a bodybuilder, tracking my macros is crucial. NutriTrack makes it easy to monitor my protein intake and adjust my diet for optimal muscle growth."
+                        &quot;As a bodybuilder, tracking my macros is crucial. NutriTrack makes it easy to monitor my protein intake and adjust my diet for optimal muscle growth.&quot;
                       </p>
                     </div>
                   </div>
