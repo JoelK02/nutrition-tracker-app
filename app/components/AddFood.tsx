@@ -5,26 +5,27 @@ import { Button } from "@/components/ui/button"
 import { Plus } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 
-// Update FoodEntry type to include id and created_at
+// Update FoodEntry type to remove type, time, and created_at
 interface FoodEntry {
   id: number;          // Add id to match database
-  type: string;
-  time: string;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  created_at: string | number;   // Add created_at to match the existing data
+  created_at: string; 
 }
 
-const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], setFoodEntries: React.Dispatch<React.SetStateAction<FoodEntry[]>> }) => {
-  const [newFood, setNewFood] = useState<Omit<FoodEntry, 'id' | 'created_at'>>({
-    type: '',
-    time: '',
-    calories: 0,
-    protein: 0,
-    carbs: 0,
-    fat: 0,
+interface AddFoodProps {
+  foodEntries: FoodEntry[];
+  setFoodEntries: React.Dispatch<React.SetStateAction<FoodEntry[]>>;
+}
+
+const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
+  const [newFood, setNewFood] = useState({
+    calories: '',
+    protein: '',
+    carbs: '',
+    fat: ''
   });
 
   const [imageUrl, setImageUrl] = useState(''); // Store image URL
@@ -32,9 +33,7 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // Check if the field is a number and handle it accordingly
-    const isNumericField = ['calories', 'protein', 'carbs', 'fat'].includes(name);
-    setNewFood({ ...newFood, [name]: isNumericField ? parseInt(value, 10) || 0 : value });
+    setNewFood({ ...newFood, [name]: value });
   };
 
   const handleImageUpload = async () => {
@@ -56,12 +55,10 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
       console.log('AI result:', result);
 
       // Assuming the result contains food information and nutrients
-      const { type, calories, protein, carbs, fat } = result;
+      const { calories, protein, carbs, fat } = result;
 
       // Update form fields with the returned food information
       setNewFood({
-        type: type || newFood.type,
-        time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
         calories: calories || 0,
         protein: protein || 0,
         carbs: carbs || 0,
@@ -75,22 +72,45 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
   };
 
   const handleAddFood = async () => {
+    // Simple validation: Check if all required fields are filled and numeric values are valid
+    if (!newFood.calories || !newFood.protein || !newFood.carbs || !newFood.fat) {
+      alert("Please fill in all fields before adding a food entry.");
+      return; // Stop execution if validation fails
+    }
+
+    // Ensure numeric fields (calories, protein, carbs, fat) are valid numbers
+    const parsedCalories = parseInt(newFood.calories, 10);
+    const parsedProtein = parseInt(newFood.protein, 10);
+    const parsedCarbs = parseInt(newFood.carbs, 10);
+    const parsedFat = parseInt(newFood.fat, 10);
+
+    if (isNaN(parsedCalories) || isNaN(parsedProtein) || isNaN(parsedCarbs) || isNaN(parsedFat)) {
+      alert("Please enter valid numbers for calories, protein, carbs, and fat.");
+      return; // Stop execution if validation fails
+    }
+
+    // Prepare the new entry
     const newEntry = {
-      ...newFood,
-      id: Date.now(),  // Generate a temporary id for the new entry
-      created_at: new Date().toISOString(), // Use current date for created_at
+      calories: parsedCalories,
+      protein: parsedProtein,
+      carbs: parsedCarbs,
+      fat: parsedFat,
     };
 
+    // Insert into Supabase
     const { data, error } = await supabase
       .from("food_entries")
       .insert([newEntry])
-      .select();
+      .select(); // This requests that the inserted row(s) be returned
 
     if (error) {
       console.error("Error saving food entry:", error.message);
     } else {
-      setFoodEntries([...foodEntries, data[0]]); // Append new entry to the list
-      setNewFood({ type: "", time: "", calories: 0, protein: 0, carbs: 0, fat: 0 }); // Reset form fields
+      console.log("Food entry saved:", data);
+      // Update state with the new entry including created_at from Supabase
+      setFoodEntries([...foodEntries, data[0]]);
+      // Clear form
+      setNewFood({ calories: "", protein: "", carbs: "", fat: "" });
     }
   };
 
@@ -107,47 +127,11 @@ const AddFood = ({ foodEntries, setFoodEntries }: { foodEntries: FoodEntry[], se
       <DialogContent>
         <DialogTitle>Add Food Entry</DialogTitle>
         <div className="grid gap-4">
-          <Input 
-            placeholder="Meal Type (e.g. Breakfast)" 
-            name="type" 
-            value={newFood.type} 
-            onChange={handleInputChange}
-          />
-          <Input 
-            placeholder="Time (e.g. 08:00)" 
-            name="time" 
-            value={newFood.time} 
-            onChange={handleInputChange}
-          />
-          <Input 
-            placeholder="Calories" 
-            name="calories" 
-            value={newFood.calories} 
-            onChange={handleInputChange} 
-          />
-          <Input 
-            placeholder="Protein (g)" 
-            name="protein" 
-            value={newFood.protein} 
-            onChange={handleInputChange} 
-          />
-          <Input 
-            placeholder="Carbs (g)" 
-            name="carbs" 
-            value={newFood.carbs} 
-            onChange={handleInputChange} 
-          />
-          <Input 
-            placeholder="Fat (g)" 
-            name="fat" 
-            value={newFood.fat} 
-            onChange={handleInputChange} 
-          />
-          <Input 
-            placeholder="Image URL" 
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)} // Handle image URL input
-          />
+          <Input name="calories" value={newFood.calories} onChange={handleInputChange} placeholder="Calories" />
+          <Input name="protein" value={newFood.protein} onChange={handleInputChange} placeholder="Protein" />
+          <Input name="carbs" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs" />
+          <Input name="fat" value={newFood.fat} onChange={handleInputChange} placeholder="Fat" />
+
 
           <Button onClick={handleImageUpload} disabled={loading}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}

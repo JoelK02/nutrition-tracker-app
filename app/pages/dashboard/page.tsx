@@ -22,7 +22,6 @@ import {
 import NavItem from '../../components/NavItem'
 import CircularProgressBar from '../../components/CircularProgressBar'
 import NutrientBar from '../../components/NutrientBar'
-import NutrientCard from '../../components/NutrientCard'
 import AnalyticsSection from '../../components/Analytics';
 import AddFood from '../../components/AddFood';
 
@@ -39,10 +38,10 @@ const generateWeekData = (startDate: Date) => {
 }
 
 const foodEntriesDefault = [
-  { id: 1, type: 'Breakfast', time: '08:00', calories: 350, protein: 20, carbs: 40, fat: 15, created_at: 0 },
-  { id: 2, type: 'Lunch', time: '12:30', calories: 550, protein: 25, carbs: 60, fat: 20, created_at: 0 },
-  { id: 3, type: 'Snack', time: '15:00', calories: 200, protein: 10, carbs: 30, fat: 10, created_at: 0 },
-  { id: 4, type: 'Dinner', time: '19:00', calories: 650, protein: 30, carbs: 70, fat: 25, created_at: 0 },
+  { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z' },
+  { id: 2, calories: 550, protein: 25, carbs: 60, fat: 20, created_at: '2023-09-14T12:00:00Z' },
+  { id: 3, calories: 200, protein: 10, carbs: 30, fat: 10, created_at: '2023-09-14T12:00:00Z' },
+  { id: 4, calories: 650, protein: 30, carbs: 70, fat: 25, created_at: '2023-09-14T12:00:00Z' },
 ]
 
 export default function NutritionTracker() {
@@ -52,8 +51,6 @@ export default function NutritionTracker() {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   const [newFood, setNewFood] = useState({
-    type: '',
-    time: '',
     calories: '',
     protein: '',
     carbs: '',
@@ -119,39 +116,36 @@ export default function NutritionTracker() {
 
   const handleAddFood = async () => {
     // Simple validation: Check if all required fields are filled and numeric values are valid
-    if (!newFood.type || !newFood.time || !newFood.calories || !newFood.protein || !newFood.carbs || !newFood.fat) {
+    if (!newFood.calories || !newFood.protein || !newFood.carbs || !newFood.fat) {
       alert("Please fill in all fields before adding a food entry.");
       return; // Stop execution if validation fails
     }
-  
+
     // Ensure numeric fields (calories, protein, carbs, fat) are valid numbers
     const parsedCalories = parseInt(newFood.calories, 10);
     const parsedProtein = parseInt(newFood.protein, 10);
     const parsedCarbs = parseInt(newFood.carbs, 10);
     const parsedFat = parseInt(newFood.fat, 10);
-  
+
     if (isNaN(parsedCalories) || isNaN(parsedProtein) || isNaN(parsedCarbs) || isNaN(parsedFat)) {
       alert("Please enter valid numbers for calories, protein, carbs, and fat.");
       return; // Stop execution if validation fails
     }
-  
+
     // Prepare the new entry
     const newEntry = {
-      type: newFood.type,
-      time: newFood.time,
       calories: parsedCalories,
       protein: parsedProtein,
       carbs: parsedCarbs,
       fat: parsedFat,
-      created_at: new Date().toISOString(), // Ensure created_at is set to the current timestamp
     };
-  
+
     // Insert into Supabase
     const { data, error } = await supabase
       .from("food_entries")
       .insert([newEntry])
       .select(); // This requests that the inserted row(s) be returned
-  
+
     if (error) {
       console.error("Error saving food entry:", error.message);
     } else {
@@ -159,7 +153,7 @@ export default function NutritionTracker() {
       // Update state with the new entry including created_at from Supabase
       setFoodEntries([...foodEntries, data[0]]);
       // Clear form
-      setNewFood({ type: "", time: "", calories: "", protein: "", carbs: "", fat: "" });
+      setNewFood({ calories: "", protein: "", carbs: "", fat: "" });
     }
   };
   
@@ -232,8 +226,6 @@ export default function NutritionTracker() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Time</TableHead>
                 <TableHead>Calories</TableHead>
                 <TableHead>Protein</TableHead>
                 <TableHead>Carbs</TableHead>
@@ -243,8 +235,6 @@ export default function NutritionTracker() {
             <TableBody>
               {foodEntries.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell>{entry.type}</TableCell>
-                  <TableCell>{formatTimestamp(entry.created_at.toString())}</TableCell>
                   <TableCell>{entry.calories}</TableCell>
                   <TableCell>{entry.protein}</TableCell>
                   <TableCell>{entry.carbs}</TableCell>
@@ -257,7 +247,7 @@ export default function NutritionTracker() {
       </main>
       
       {/* Use the new AddFood component */}
-      {/* <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} /> */}
+      <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} />
     </div>
   )
 }
