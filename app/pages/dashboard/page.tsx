@@ -26,16 +26,6 @@ import AnalyticsSection from '../../components/Analytics';
 import AddFood from '../../components/AddFood';
 
 
-const generateWeekData = (startDate: Date) => {
-  return Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(startDate)
-    date.setDate(date.getDate() + i)
-    return {
-      day: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      calories: Math.floor(Math.random() * (2200 - 1800 + 1) + 1800)
-    }
-  })
-}
 
 const foodEntriesDefault = [
   { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z' },
@@ -45,17 +35,9 @@ const foodEntriesDefault = [
 ]
 
 export default function NutritionTracker() {
-  const [currentWeekStart, setCurrentWeekStart] = useState(new Date('2023-09-14'))
-  const [weeklyData, setWeeklyData] = useState(generateWeekData(currentWeekStart))
   const [foodEntries, setFoodEntries] = useState(foodEntriesDefault)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
-  const [newFood, setNewFood] = useState({
-    calories: '',
-    protein: '',
-    carbs: '',
-    fat: ''
-  })
 
   // Filter entries for today
   const today = new Date().toLocaleDateString('en-GB') // Use current date in 'DD/MM/YYYY' format
@@ -95,76 +77,8 @@ export default function NutritionTracker() {
     fetchFoodEntries()
   }, [])  // Empty dependency array means this runs once on component mount
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setNewFood({ ...newFood, [name]: value })
-  }
-
-  const formatTimestamp = (isoString: string) => {
-    const date = new Date(isoString)
-  
-    // Use toLocaleString with options for desired format
-    return date.toLocaleString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true, // 12-hour format with AM/PM
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  const handleAddFood = async () => {
-    // Simple validation: Check if all required fields are filled and numeric values are valid
-    if (!newFood.calories || !newFood.protein || !newFood.carbs || !newFood.fat) {
-      alert("Please fill in all fields before adding a food entry.");
-      return; // Stop execution if validation fails
-    }
-
-    // Ensure numeric fields (calories, protein, carbs, fat) are valid numbers
-    const parsedCalories = parseInt(newFood.calories, 10);
-    const parsedProtein = parseInt(newFood.protein, 10);
-    const parsedCarbs = parseInt(newFood.carbs, 10);
-    const parsedFat = parseInt(newFood.fat, 10);
-
-    if (isNaN(parsedCalories) || isNaN(parsedProtein) || isNaN(parsedCarbs) || isNaN(parsedFat)) {
-      alert("Please enter valid numbers for calories, protein, carbs, and fat.");
-      return; // Stop execution if validation fails
-    }
-
-    // Prepare the new entry
-    const newEntry = {
-      calories: parsedCalories,
-      protein: parsedProtein,
-      carbs: parsedCarbs,
-      fat: parsedFat,
-    };
-
-    // Insert into Supabase
-    const { data, error } = await supabase
-      .from("food_entries")
-      .insert([newEntry])
-      .select(); // This requests that the inserted row(s) be returned
-
-    if (error) {
-      console.error("Error saving food entry:", error.message);
-    } else {
-      console.log("Food entry saved:", data);
-      // Update state with the new entry including created_at from Supabase
-      setFoodEntries([...foodEntries, data[0]]);
-      // Clear form
-      setNewFood({ calories: "", protein: "", carbs: "", fat: "" });
-    }
-  };
-  
   
 
-  const changeWeek = (direction: 'prev' | 'next') => {
-    const newDate = new Date(currentWeekStart)
-    newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7))
-    setCurrentWeekStart(newDate)
-    setWeeklyData(generateWeekData(newDate))
-  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -233,7 +147,7 @@ export default function NutritionTracker() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {foodEntries.map((entry) => (
+              {todayEntries.map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell>{entry.calories}</TableCell>
                   <TableCell>{entry.protein}</TableCell>
