@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation' // Use next/navigation in Next.js 13+
 import { ArrowLeft, Facebook, Twitter, Github } from 'lucide-react'
 
@@ -8,13 +8,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { supabase } from '@/lib/supabaseClient' // Import Supabase client
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const { session } = useAuth()
   const router = useRouter() // To handle redirects
+
+  useEffect(() => {
+    if (session) {
+      router.push('/pages/dashboard') // Redirect to dashboard if already signed in
+    }
+  }, [session, router])
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
