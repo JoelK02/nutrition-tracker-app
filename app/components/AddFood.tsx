@@ -53,24 +53,28 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
     setCameraError(null);
     if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
       try {
+        console.log('Attempting to access camera...');
         const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'environment' } 
         });
+        console.log('Camera access granted, setting up video feed...');
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          await videoRef.current.play();
+          videoRef.current.onloadedmetadata = () => {
+            console.log('Video metadata loaded, playing video...');
+            videoRef.current?.play().catch(e => console.error('Error playing video:', e));
+          };
         }
       } catch (error) {
         console.error('Error accessing camera:', error);
         setCameraError('Unable to access camera. Please check your permissions.');
-        // Fallback to file input
         if (fileInputRef.current) {
           fileInputRef.current.click();
         }
       }
     } else {
+      console.log('getUserMedia not supported');
       setCameraError('Your device does not support camera access.');
-      // Fallback to file input
       if (fileInputRef.current) {
         fileInputRef.current.click();
       }
@@ -205,7 +209,18 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
           <Input name="carbs" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs" />
           <Input name="fat" value={newFood.fat} onChange={handleInputChange} placeholder="Fat" />
 
-          <video ref={videoRef} style={{ display: videoRef.current?.srcObject ? 'block' : 'none' }} />
+          <video 
+            ref={videoRef} 
+            style={{ 
+              display: videoRef.current?.srcObject ? 'block' : 'none',
+              width: '100%',
+              maxWidth: '100%',
+              height: 'auto',
+              maxHeight: '50vh',
+              objectFit: 'contain'
+            }} 
+            playsInline
+          />
           <input
             type="file"
             accept="image/*"
