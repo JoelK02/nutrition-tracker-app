@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef  } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus } from 'lucide-react';
+import { Plus, Camera } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+
 
 // Update FoodEntry type to remove type, time, and created_at
 interface FoodEntry {
@@ -32,11 +33,39 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   const [loading, setLoading] = useState(false); // Loading state for processing
 
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleTakePicture = async () => {
+    if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // For demonstration, we'll just log that camera access was granted
+        console.log('Camera access granted');
+        // In a real implementation, you would show a video stream and allow the user to capture
+        // For now, we'll trigger the file input click to open the camera
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+        // Don't forget to stop the stream
+        stream.getTracks().forEach(track => track.stop());
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        alert('Unable to access camera. Please check your permissions.');
+      }
+    } else {
+      // Fallback for devices that don't support getUserMedia
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      // You might want to show a preview of the image here
+      console.log('Image file selected:', file.name);
     }
   };
 
@@ -141,7 +170,25 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
           <Input name="carbs" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs" />
           <Input name="fat" value={newFood.fat} onChange={handleInputChange} placeholder="Fat" />
 
-          <Input name="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL" />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+          />
+
+          <Button onClick={handleTakePicture} disabled={loading}>
+            <Camera className="mr-2" size={18} />
+            {loading ? 'Processing...' : 'Take Picture'}
+          </Button>
+
+          {imageFile && (
+            <div className="text-sm text-gray-500">
+              Selected: {imageFile.name}
+            </div>
+          )}
 
           <Button onClick={handleImageUpload} disabled={loading}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}
