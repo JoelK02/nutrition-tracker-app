@@ -34,29 +34,44 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const handleTakePicture = async () => {
     if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        // For demonstration, we'll just log that camera access was granted
-        console.log('Camera access granted');
-        // In a real implementation, you would show a video stream and allow the user to capture
-        // For now, we'll trigger the file input click to open the camera
-        if (fileInputRef.current) {
-          fileInputRef.current.click();
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
         }
-        // Don't forget to stop the stream
-        stream.getTracks().forEach(track => track.stop());
       } catch (error) {
         console.error('Error accessing camera:', error);
         alert('Unable to access camera. Please check your permissions.');
       }
     } else {
-      // Fallback for devices that don't support getUserMedia
-      if (fileInputRef.current) {
-        fileInputRef.current.click();
+      alert('Your device does not support camera access.');
+    }
+  };
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext('2d');
+      if (context) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        context.drawImage(videoRef.current, 0, 0);
+        canvasRef.current.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], "captured-image.jpg", { type: "image/jpeg" });
+            setImageFile(file);
+          }
+        }, 'image/jpeg');
       }
+      // Stop the video stream
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
     }
   };
 
@@ -170,25 +185,30 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
           <Input name="carbs" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs" />
           <Input name="fat" value={newFood.fat} onChange={handleInputChange} placeholder="Fat" />
 
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-          />
+          <video ref={videoRef} style={{ display: videoRef.current?.srcObject ? 'block' : 'none' }} />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+          {!videoRef.current?.srcObject ? (
+            <Button onClick={handleTakePicture} disabled={loading}>
+              <Camera className="mr-2" size={18} />
+              Open Camera
+            </Button>
+          ) : (
+            <Button onClick={captureImage} disabled={loading}>
+              Capture Image
+            </Button>
+          )}
+
+          {imageFile && (
+            <div className="text-sm text-gray-500">
+              Image captured
+            </div>
+          )}
 
           <Button onClick={handleTakePicture} disabled={loading}>
             <Camera className="mr-2" size={18} />
             {loading ? 'Processing...' : 'Take Picture'}
           </Button>
-
-          {imageFile && (
-            <div className="text-sm text-gray-500">
-              Selected: {imageFile.name}
-            </div>
-          )}
 
           <Button onClick={handleImageUpload} disabled={loading}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}
