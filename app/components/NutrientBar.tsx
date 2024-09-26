@@ -1,22 +1,29 @@
-import React from 'react'
-import { Progress } from "@/components/ui/progress"
+import React from 'react';
 
 interface NutrientBarProps {
-  label: string
-  value: number
-  max: number
-  color: string
+  label: string;
+  value: number;
+  max: number;
+  color: string;
 }
 
-export default function NutrientBar({ label, value, max, color }: NutrientBarProps) {
-  const percentage = (value / max) * 100
+const NutrientBar: React.FC<NutrientBarProps> = ({ label, value, max, color }) => {
+  const percentage = (value / max) * 100;
+
   return (
     <div className="mb-4">
-      <div className="flex justify-between text-sm mb-1">
-        <span>{label}</span>
-        <span>{value}g / {max}g</span>
+      <div className="flex justify-between mb-1">
+        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <span className="text-sm font-medium text-gray-700">{value}g / {max}g</span>
       </div>
-      <Progress value={percentage} className={`h-2 ${color}`} />
+      <div className="w-full bg-gray-200 rounded-full h-3">
+        <div
+          className={`h-3 rounded-full ${color}`}
+          style={{ width: `${percentage}%` }}
+        ></div>
+      </div>
     </div>
-  )
-}
+  );
+};
+
+export default NutrientBar;

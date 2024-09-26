@@ -25,8 +25,6 @@ import NutrientBar from '../../components/NutrientBar'
 import AnalyticsSection from '../../components/Analytics';
 import AddFood from '../../components/AddFood';
 
-
-
 const foodEntriesDefault = [
   { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z' },
   { id: 2, calories: 550, protein: 25, carbs: 60, fat: 20, created_at: '2023-09-14T12:00:00Z' },
@@ -37,7 +35,6 @@ const foodEntriesDefault = [
 export default function NutritionTracker() {
   const [foodEntries, setFoodEntries] = useState(foodEntriesDefault)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
-
 
   // Filter entries for today
   const today = new Date().toLocaleDateString('en-GB') // Use current date in 'DD/MM/YYYY' format
@@ -58,8 +55,8 @@ export default function NutritionTracker() {
   const maxCarbs = 250
   const maxFat = 80
 
-   // Function to fetch food entries from Supabase
-   const fetchFoodEntries = async () => {
+  // Function to fetch food entries from Supabase
+  const fetchFoodEntries = async () => {
     const { data, error } = await supabase
       .from('food_entries')
       .select('*')  // Fetch all columns
@@ -76,9 +73,6 @@ export default function NutritionTracker() {
   useEffect(() => {
     fetchFoodEntries()
   }, [])  // Empty dependency array means this runs once on component mount
-
-  
-
 
   return (
     <ProtectedLayout>
@@ -123,7 +117,7 @@ export default function NutritionTracker() {
                 {/* Update CircularProgressBar to reflect today's total calories */}
                 <CircularProgressBar value={totalCalories} max={maxCalories} />
               </div>
-              <div className="w-full md:w-1/2">
+              <div className="w-full md:w-1/2 space-y-4">
                 {/* Update NutrientBars to reflect today's total nutrients */}
                 <NutrientBar label="Protein" value={totalProtein} max={maxProtein} color="bg-blue-400" />
                 <NutrientBar label="Carbs" value={totalCarbs} max={maxCarbs} color="bg-yellow-400" />

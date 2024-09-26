@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Plus } from 'lucide-react'
-import { supabase } from '@/lib/supabaseClient'
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Plus } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 
 // Update FoodEntry type to remove type, time, and created_at
 interface FoodEntry {
@@ -30,6 +30,15 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
 
   const [imageUrl, setImageUrl] = useState(''); // Store image URL
   const [loading, setLoading] = useState(false); // Loading state for processing
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -59,10 +68,10 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
 
       // Update form fields with the returned food information
       setNewFood({
-        calories: calories || 0,
-        protein: protein || 0,
-        carbs: carbs || 0,
-        fat: fat || 0,
+        calories: calories.toString() || '',
+        protein: protein.toString() || '',
+        carbs: carbs.toString() || '',
+        fat: fat.toString() || '',
       });
     } catch (error) {
       console.error('Error processing image:', error);
@@ -132,6 +141,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
           <Input name="carbs" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs" />
           <Input name="fat" value={newFood.fat} onChange={handleInputChange} placeholder="Fat" />
 
+          <Input name="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="Image URL" />
 
           <Button onClick={handleImageUpload} disabled={loading}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}
