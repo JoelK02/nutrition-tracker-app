@@ -60,9 +60,11 @@ export default function LandingPage() {
             </div>
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="mt-3 space-y-1">
-                <button className="w-full text-left block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
-                  Sign In
-                </button>
+                <Link href="/pages/sign-in">
+                  <button className="w-full text-left block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                    Sign In
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
