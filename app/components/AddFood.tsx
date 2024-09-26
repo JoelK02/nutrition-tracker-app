@@ -1,8 +1,8 @@
-import React, { useState, useRef  } from 'react';
+import React, { useState, useRef, useEffect  } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Camera } from 'lucide-react';
+import { Plus, Camera, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 
@@ -33,41 +33,63 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   const [loading, setLoading] = useState(false); // Loading state for processing
 
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  useEffect(() => {
+    return () => {
+      // Clean up video stream when component unmounts
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   const handleTakePicture = async () => {
+    setCameraError(null);
     if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } 
+        });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play();
+          await videoRef.current.play();
         }
       } catch (error) {
         console.error('Error accessing camera:', error);
-        alert('Unable to access camera. Please check your permissions.');
+        setCameraError('Unable to access camera. Please check your permissions.');
+        // Fallback to file input
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
       }
     } else {
-      alert('Your device does not support camera access.');
+      setCameraError('Your device does not support camera access.');
+      // Fallback to file input
+      if (fileInputRef.current) {
+        fileInputRef.current.click();
+      }
     }
   };
 
   const captureImage = () => {
-    if (videoRef.current && canvasRef.current) {
-      const context = canvasRef.current.getContext('2d');
-      if (context) {
-        canvasRef.current.width = videoRef.current.videoWidth;
-        canvasRef.current.height = videoRef.current.videoHeight;
-        context.drawImage(videoRef.current, 0, 0);
-        canvasRef.current.toBlob((blob) => {
-          if (blob) {
-            const file = new File([blob], "captured-image.jpg", { type: "image/jpeg" });
-            setImageFile(file);
-          }
-        }, 'image/jpeg');
-      }
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      canvas.getContext('2d')?.drawImage(videoRef.current, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], "captured-image.jpg", { type: "image/jpeg" });
+          setImageFile(file);
+        }
+      }, 'image/jpeg');
+
       // Stop the video stream
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach(track => track.stop());
@@ -79,8 +101,6 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      // You might want to show a preview of the image here
-      console.log('Image file selected:', file.name);
     }
   };
 
@@ -186,13 +206,28 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
           <Input name="fat" value={newFood.fat} onChange={handleInputChange} placeholder="Fat" />
 
           <video ref={videoRef} style={{ display: videoRef.current?.srcObject ? 'block' : 'none' }} />
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+          />
+
+          {cameraError && <div className="text-sm text-red-500">{cameraError}</div>}
 
           {!videoRef.current?.srcObject ? (
-            <Button onClick={handleTakePicture} disabled={loading}>
-              <Camera className="mr-2" size={18} />
-              Open Camera
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handleTakePicture} disabled={loading} className="flex-1">
+                <Camera className="mr-2" size={18} />
+                Open Camera
+              </Button>
+              <Button onClick={() => fileInputRef.current?.click()} disabled={loading} className="flex-1">
+                <ImageIcon className="mr-2" size={18} />
+                Select Image
+              </Button>
+            </div>
           ) : (
             <Button onClick={captureImage} disabled={loading}>
               Capture Image
@@ -201,14 +236,10 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
 
           {imageFile && (
             <div className="text-sm text-gray-500">
-              Image captured
+              Image selected: {imageFile.name}
             </div>
           )}
 
-          <Button onClick={handleTakePicture} disabled={loading}>
-            <Camera className="mr-2" size={18} />
-            {loading ? 'Processing...' : 'Take Picture'}
-          </Button>
 
           <Button onClick={handleImageUpload} disabled={loading}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}
