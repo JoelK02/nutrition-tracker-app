@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertCircle } from 'lucide-react';
 
 interface NutrientBarProps {
   label: string;
@@ -8,17 +9,22 @@ interface NutrientBarProps {
 }
 
 const NutrientBar: React.FC<NutrientBarProps> = ({ label, value, max, color }) => {
-  const percentage = (value / max) * 100;
+  const percentage = Math.min((value / max) * 100, 100); // Ensure percentage doesn't exceed 100
 
   return (
-    <div className="mb-4">
-      <div className="flex justify-between mb-1">
-        <span className="text-sm font-medium text-gray-700">{label}</span>
-        <span className="text-sm font-medium text-gray-700">{value}g / {max}g</span>
+    <div className="space-y-1">
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium">{label}</span>
+        <div className="flex items-center">
+          <span className="text-sm font-medium">{value}g / {max}g</span>
+          {value > max && (
+            <AlertCircle className="w-4 h-4 ml-1 text-yellow-500" />
+          )}
+        </div>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
-        <div
-          className={`h-3 rounded-full ${color}`}
+      <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div 
+          className={`${color} h-2.5 rounded-full`} 
           style={{ width: `${percentage}%` }}
         ></div>
       </div>
