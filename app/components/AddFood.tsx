@@ -31,6 +31,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
 
   const [imageUrl, setImageUrl] = useState(''); // Store image URL
   const [loading, setLoading] = useState(false); // Loading state for processing
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -91,6 +92,10 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
         if (blob) {
           const file = new File([blob], "captured-image.jpg", { type: "image/jpeg" });
           setImageFile(file);
+          
+          // Create and set the preview URL
+          const previewUrl = URL.createObjectURL(blob);
+          setImagePreviewUrl(previewUrl);
         }
       }, 'image/jpeg');
 
@@ -105,8 +110,20 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
+      // Create and set the preview URL for selected files too
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviewUrl(previewUrl);
     }
   };
+
+  // Add a cleanup effect for the preview URL
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -221,6 +238,21 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
             }} 
             playsInline
           />
+
+          {imagePreviewUrl && (
+            <img 
+              src={imagePreviewUrl} 
+              alt="Captured food" 
+              style={{
+                width: '100%',
+                maxWidth: '100%',
+                height: 'auto',
+                maxHeight: '50vh',
+                objectFit: 'contain'
+              }}
+            />
+          )}
+          
           <input
             type="file"
             accept="image/*"
