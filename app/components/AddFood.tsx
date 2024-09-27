@@ -131,19 +131,26 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   };
 
   const handleImageUpload = async () => {
-    if (!imageUrl) {
-      alert('Please provide an image URL.');
+    if (!imageFile) {
+      alert('Please capture or select an image first.');
       return;
     }
 
     setLoading(true);
 
     try {
+      // Create a FormData object to send the file
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
       const response = await fetch('/api/openai-image', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl }) // Send image URL to API
+        body: formData // Send the FormData object containing the image file
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const result = await response.json();
       console.log('AI result:', result);
@@ -160,6 +167,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
       });
     } catch (error) {
       console.error('Error processing image:', error);
+      alert('Failed to process the image. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -221,6 +229,20 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
       <DialogContent>
         <DialogTitle>Add Food Entry</DialogTitle>
         <div className="grid gap-4">
+          {imagePreviewUrl && (
+            <img 
+              src={imagePreviewUrl} 
+              alt="Captured food" 
+              style={{
+                width: '100%',
+                maxWidth: '100%',
+                height: 'auto',
+                maxHeight: '50vh',
+                objectFit: 'contain'
+              }}
+            />
+          )}
+
           <Input name="calories" value={newFood.calories} onChange={handleInputChange} placeholder="Calories" />
           <Input name="protein" value={newFood.protein} onChange={handleInputChange} placeholder="Protein" />
           <Input name="carbs" value={newFood.carbs} onChange={handleInputChange} placeholder="Carbs" />
@@ -239,20 +261,8 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
             playsInline
           />
 
-          {imagePreviewUrl && (
-            <img 
-              src={imagePreviewUrl} 
-              alt="Captured food" 
-              style={{
-                width: '100%',
-                maxWidth: '100%',
-                height: 'auto',
-                maxHeight: '50vh',
-                objectFit: 'contain'
-              }}
-            />
-          )}
           
+
           <input
             type="file"
             accept="image/*"
@@ -288,7 +298,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
           )}
 
 
-          <Button onClick={handleImageUpload} disabled={loading}>
+          <Button onClick={handleImageUpload} disabled={loading || !imageFile}>
             {loading ? 'Processing...' : 'Upload Image & Detect Nutrients'}
           </Button>
 
