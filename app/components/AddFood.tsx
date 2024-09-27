@@ -50,6 +50,41 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
     };
   }, []);
 
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const scaleFactor = Math.min(1, 800 / Math.max(img.width, img.height));
+          canvas.width = img.width * scaleFactor;
+          canvas.height = img.height * scaleFactor;
+          ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const newFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(newFile);
+              } else {
+                reject(new Error('Canvas to Blob conversion failed'));
+              }
+            },
+            'image/jpeg',
+            0.7
+          );
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
   const handleTakePicture = async () => {
     setCameraError(null);
     if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
@@ -139,13 +174,26 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
     setLoading(true);
 
     try {
+      // Compress the image
+      const compressedFile = await compressImage(imageFile);
+
       // Create a FormData object to send the file
       const formData = new FormData();
-      formData.append('image', imageFile);
+      formData.append('image', compressedFile);
+
+      // Convert FormData to base64
+      const base64Image = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(compressedFile);
+      });
 
       const response = await fetch('/api/openai-image', {
         method: 'POST',
-        body: formData // Send the FormData object containing the image file
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageUrl: base64Image }),
       });
 
       if (!response.ok) {
