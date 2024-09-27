@@ -33,6 +33,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [foodDescription, setFoodDescription] = useState<string>('');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,6 +122,9 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
       carbs: result.carbs.toString(),
       fat: result.fat.toString(),
     });
+
+    setFoodDescription(result.description || 'No description available');
+
   };
 
   const handleAddFood = async () => {
@@ -174,20 +178,20 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
         <Plus size={24} color="white" />
       </Button>
       <AnimatePresence>
-          {isOpen && (
-              <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{
-                  type: "spring",
-                  damping: 30,
-                  stiffness: 300,
-                  mass: 0.8,
-                  duration: 0.3
-                }}
-                className="fixed inset-0 bg-white z-50 overflow-auto"
-              >
+        {isOpen && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{
+              type: "spring",
+              damping: 30,
+              stiffness: 300,
+              mass: 0.8,
+              duration: 0.3
+            }}
+            className="fixed inset-0 bg-white z-50 overflow-auto"
+          >
             <div className="relative h-64">
               {imagePreviewUrl ? (
                 <img 
@@ -209,7 +213,12 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
               </Button>
             </div>
             <div className="p-6 bg-white rounded-t-3xl -mt-6 relative">
-              <h2 className="text-2xl font-bold mb-2">Add Food Entry</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                {imageFile ? 'About' : 'Add Food Entry'}
+              </h2>
+              {imageFile && (
+                <p className="text-sm text-gray-600 mb-4">{foodDescription}</p>
+              )}
               <div className="flex flex-wrap gap-2 mb-4">
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Food</span>
                 <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Meal</span>
