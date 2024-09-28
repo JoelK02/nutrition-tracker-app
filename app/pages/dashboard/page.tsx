@@ -25,6 +25,7 @@ import CircularProgressBar from '../../components/CircularProgressBar'
 import NutrientBar from '../../components/NutrientBar'
 import AnalyticsSection from '../../components/Analytics';
 import AddFood from '../../components/AddFood';
+import SettingsComponent from '../../components/Settings';
 
 const foodEntriesDefault = [
   { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z', food_image: 'food-images/1.jpg', food_description: 'Chicken Parmesan' },
@@ -42,6 +43,7 @@ function getImageUrl(path: string | null) {
 export default function NutritionTracker() {
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>(foodEntriesDefault)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Filter entries for today
   const today = new Date().toLocaleDateString('en-GB') // Use current date in 'DD/MM/YYYY' format
@@ -111,6 +113,25 @@ export default function NutritionTracker() {
 
         {/* Main Content */}
         <main className="flex-1 p-8 overflow-auto">
+
+          {/* Settings Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 z-10"
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            <Settings size={24} />
+          </Button>
+
+          {/* Settings Component */}
+          {isSettingsOpen && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
+              <div className="w-full max-w-md bg-white h-full overflow-auto">
+                  <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+              </div>
+            </div>
+          )}
           {/* Mobile Header */}
           <header className="md:hidden flex justify-center items-center mb-6">
             <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
