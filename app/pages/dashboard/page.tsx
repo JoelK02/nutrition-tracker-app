@@ -85,54 +85,39 @@ export default function NutritionTracker() {
 
   return (
     <ProtectedLayout>
-      <div className="flex h-screen bg-gray-100 main-container">
-        {/* Navigation Menu - Desktop */}
-        <nav className="hidden md:flex flex-col justify-between w-20 bg-white p-4">
-          <div className="space-y-8">
-            <NavItem icon={<PieChart size={24} />} label="Home" active />
-            <NavItem icon={<BookOpen size={24} />} label="Recipes" />
-            <NavItem icon={<Settings size={24} />} label="Settings" />
-          </div>
-        </nav>
-
-        {/* Mobile Navigation */}
-        <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden absolute top-safe left-4 z-10">
-              <Menu size={24} />
+      <div className="flex flex-col min-h-screen bg-gray-100">
+        {/* Fixed Header */}
+        <header className="fixed top-0 left-0 right-0 bg-white z-50 shadow-sm">
+          <div className="flex items-center justify-between px-4 h-16 pt-safe">
+            <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                <nav className="flex flex-col gap-4">
+                  <NavItem icon={<PieChart size={24} />} label="Home" active />
+                  <NavItem icon={<BookOpen size={24} />} label="Recipes" />
+                  <NavItem icon={<Settings size={24} />} label="Settings" />
+                </nav>
+              </SheetContent>
+            </Sheet>
+            <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSettingsOpen(true)}
+            >
+              <Settings size={24} />
             </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-            <nav className="flex flex-col gap-4">
-              <NavItem icon={<PieChart size={24} />} label="Home" active />
-              <NavItem icon={<BookOpen size={24} />} label="Recipes" />
-              <NavItem icon={<Settings size={24} />} label="Settings" />
-            </nav>
-          </SheetContent>
-        </Sheet>
+          </div>
+        </header>
 
         {/* Main Content */}
-        <div className="flex-1 px-4 pt-safe pb-4">
-
-          {/* Settings Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-safe right-4 z-10 mt-2"
-            onClick={() => setIsSettingsOpen(true)}
-          >
-            <Settings size={24} />
-          </Button>
-
-          {/* Settings Component */}
-          <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-          {/* Mobile Header */}
-          <header className="md:hidden flex justify-center items-center mb-6 mt-12">
-            <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
-          </header>
-
+        <main className="flex-1 px-4 pt-safe mt-16 pb-4 overflow-y-auto">
           {/* Today's Summary */}
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm mb-8 mt-4">
             <h2 className="text-lg font-semibold mb-4">Today&apos;s Summary</h2>
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="mb-6 md:mb-0">
@@ -148,12 +133,9 @@ export default function NutritionTracker() {
             </div>
           </div>
 
-          {/* Analytics */}
-          {/* <AnalyticsSection /> */}
-
           {/* Food Entries */}
           <div className="space-y-4">
-            <h1 className="text-xl font-semibold mb-4">Recently Consumed</h1>
+            <h2 className="text-xl font-semibold mb-4">Recently Consumed</h2>
             {todayEntries.map((entry) => (
               <div key={entry.id} className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
@@ -205,11 +187,14 @@ export default function NutritionTracker() {
               </div>
             ))}
           </div>
-        </div>
+        </main>
         
         {/* Use the new AddFood component */}
         <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} />
       </div>
+
+      {/* Settings Component */}
+      <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
     </ProtectedLayout>
   )
 }
