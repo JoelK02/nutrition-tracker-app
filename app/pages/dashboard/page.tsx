@@ -125,13 +125,7 @@ export default function NutritionTracker() {
           </Button>
 
           {/* Settings Component */}
-          {isSettingsOpen && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end">
-              <div className="w-full max-w-md bg-white h-full overflow-auto">
-                  <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
-              </div>
-            </div>
-          )}
+          <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
           {/* Mobile Header */}
           <header className="md:hidden flex justify-center items-center mb-6">
             <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
