@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description: 'Track your nutrition and health goals',
   themeColor: '#4caf50',
   manifest: '/manifest.json',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover',
+  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
   icons: [
     { rel: 'apple-touch-icon', sizes: '180x180', url: '/logo.jpg' },
     { rel: 'icon', type: 'image/jpg', sizes: '32x32', url: '/logo.jpg' },

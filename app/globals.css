@@ -88,14 +88,25 @@
   }
 }
 
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+html {
+  height: -webkit-fill-available;
+}
+
 /* Adjust the main container */
 .main-container {
   min-height: 100vh;
   min-height: -webkit-fill-available;
   padding-top: env(safe-area-inset-top);
-  padding-right: env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
 }
 
 .top-safe {

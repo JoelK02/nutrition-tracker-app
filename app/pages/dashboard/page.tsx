@@ -98,7 +98,7 @@ export default function NutritionTracker() {
         {/* Mobile Navigation */}
         <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden absolute top-4 left-4 z-10">
+            <Button variant="ghost" size="icon" className="md:hidden absolute top-safe left-4 z-10">
               <Menu size={24} />
             </Button>
           </SheetTrigger>
@@ -112,13 +112,13 @@ export default function NutritionTracker() {
         </Sheet>
 
         {/* Main Content */}
-        <main className="flex-1 p-8 overflow-auto">
+        <div className="flex-1 px-4 pt-safe pb-4">
 
           {/* Settings Button */}
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-safe right-4 z-10"
+            className="absolute top-safe right-4 z-10 mt-2"
             onClick={() => setIsSettingsOpen(true)}
           >
             <Settings size={24} />
@@ -127,7 +127,7 @@ export default function NutritionTracker() {
           {/* Settings Component */}
           <SettingsComponent isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
           {/* Mobile Header */}
-          <header className="md:hidden flex justify-center items-center mb-6">
+          <header className="md:hidden flex justify-center items-center mb-6 mt-12">
             <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
           </header>
 
@@ -205,7 +205,7 @@ export default function NutritionTracker() {
               </div>
             ))}
           </div>
-        </main>
+        </div>
         
         {/* Use the new AddFood component */}
         <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} />
