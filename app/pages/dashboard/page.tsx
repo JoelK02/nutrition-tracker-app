@@ -5,7 +5,7 @@ import { Menu, PieChart, Settings, BookOpen, Plus, ChevronLeft, ChevronRight } f
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts'
 import { supabase } from '@/lib/supabaseClient' // Import Supabase client
 import ProtectedLayout from '@/layouts/ProtectedLayout'
-
+import Image from 'next/image';
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { FoodEntry } from '../../components/AddFood'; // Import the FoodEntry interface
 
 import NavItem from '../../components/NavItem'
 import CircularProgressBar from '../../components/CircularProgressBar'
@@ -26,14 +27,20 @@ import AnalyticsSection from '../../components/Analytics';
 import AddFood from '../../components/AddFood';
 
 const foodEntriesDefault = [
-  { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z' },
-  { id: 2, calories: 550, protein: 25, carbs: 60, fat: 20, created_at: '2023-09-14T12:00:00Z' },
-  { id: 3, calories: 200, protein: 10, carbs: 30, fat: 10, created_at: '2023-09-14T12:00:00Z' },
-  { id: 4, calories: 650, protein: 30, carbs: 70, fat: 25, created_at: '2023-09-14T12:00:00Z' },
+  { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z', food_image: 'food-images/1.jpg', food_description: 'Chicken Parmesan' },
+  { id: 2, calories: 550, protein: 25, carbs: 60, fat: 20, created_at: '2023-09-14T12:00:00Z', food_image: 'food-images/2.jpg', food_description: 'Spaghetti Carbonara' },
+  { id: 3, calories: 200, protein: 10, carbs: 30, fat: 10, created_at: '2023-09-14T12:00:00Z', food_image: 'food-images/3.jpg', food_description: 'Grilled Salmon with Asparagus' },
+  { id: 4, calories: 650, protein: 30, carbs: 70, fat: 25, created_at: '2023-09-14T12:00:00Z', food_image: 'food-images/4.jpg', food_description: 'Vegetable Stir-Fry' },
 ]
 
+function getImageUrl(path: string | null) {
+  if (!path) return null;
+  const { data } = supabase.storage.from('food-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 export default function NutritionTracker() {
-  const [foodEntries, setFoodEntries] = useState(foodEntriesDefault)
+  const [foodEntries, setFoodEntries] = useState<FoodEntry[]>(foodEntriesDefault)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   // Filter entries for today
@@ -127,31 +134,61 @@ export default function NutritionTracker() {
           </div>
 
           {/* Analytics */}
-          <AnalyticsSection />
+          {/* <AnalyticsSection /> */}
 
           {/* Food Entries */}
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Today&apos;s Food Entries</h2>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Calories</TableHead>
-                  <TableHead>Protein</TableHead>
-                  <TableHead>Carbs</TableHead>
-                  <TableHead>Fat</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {todayEntries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{entry.calories}</TableCell>
-                    <TableCell>{entry.protein}</TableCell>
-                    <TableCell>{entry.carbs}</TableCell>
-                    <TableCell>{entry.fat}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+          <div className="space-y-4">
+            <h1 className="text-xl font-semibold mb-4">Recently Consumed</h1>
+            {todayEntries.map((entry) => (
+              <div key={entry.id} className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-3">
+                    {entry.food_image && (
+                      <Image
+                        src={getImageUrl(entry.food_image) || '/placeholder-image.jpg'}
+                        alt={entry.food_description || 'Food image'}
+                        width={40}
+                        height={40}
+                        className="rounded-lg object-cover"
+                        loader={({ src }) => src}
+                        unoptimized
+                      />
+                    )}
+                    <div>
+                      <h3 className="font-medium truncate max-w-[200px]" title={entry.food_description || 'Unnamed Food'}>
+                        {entry.food_description || 'Unnamed Food'}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {new Date(entry.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                  <button className="text-red-500 hover:text-red-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-sm">
+                  <div>
+                    <p className="font-medium">Calories</p>
+                    <p>{entry.calories}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Protein</p>
+                    <p>{entry.protein}g</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Carbs</p>
+                    <p>{entry.carbs}g</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Fat</p>
+                    <p>{entry.fat}g</p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </main>
         

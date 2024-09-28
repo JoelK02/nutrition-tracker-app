@@ -5,7 +5,19 @@ const withPWA = require('next-pwa')({
 });
 
 const nextConfig = {
-  // Add any other Next.js config options here
+  reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: process.env.NEXT_PUBLIC_SUPABASE_URL 
+          ? process.env.NEXT_PUBLIC_SUPABASE_URL.replace('https://', '')
+          : '',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
 };
 
 module.exports = withPWA(nextConfig);

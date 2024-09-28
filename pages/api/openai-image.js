@@ -26,7 +26,6 @@ export default async function handler(req, res) {
 
   try {
     const { imageUrl } = req.body;
-    console.log("imageUrl", imageUrl);
 
     // Get a description of the image
     const descriptionResponse = await retryOpenAIRequest(() => 

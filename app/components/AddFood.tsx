@@ -5,14 +5,17 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Plus, ArrowLeft, Camera } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { v4 as uuidv4 } from 'uuid';
 
-interface FoodEntry {
+export interface FoodEntry {
   id: number;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
   created_at: string;
+  food_image?: string | null; // Make this optional and allow null
+  food_description?: string; // Make this optional
 }
 
 interface AddFoodProps {
@@ -34,6 +37,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [foodDescription, setFoodDescription] = useState<string>('');
+  
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,11 +142,31 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
       return;
     }
 
+    let imagePath = null;
+    if (imageFile) {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('food-images')
+        .upload(fileName, imageFile);
+    
+      if (uploadError) {
+        console.error("Error uploading image:", uploadError);
+        console.error("Error message:", uploadError.message);
+        alert("Failed to upload image. Please try again.");
+        return;
+      }
+    
+      imagePath = uploadData?.path;
+    }
+
     const newEntry = {
       calories: parsedCalories,
       protein: parsedProtein,
       carbs: parsedCarbs,
       fat: parsedFat,
+      food_description: foodDescription,
+      food_image: imagePath,
     };
 
     const { data, error } = await supabase
@@ -151,17 +175,21 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
       .select();
 
     if (error) {
-      console.error("Error saving food entry:", error.message);
-      alert("Failed to save food entry. Please try again.");
+      console.error("Detailed error:", error);
+      console.error("Error code:", error.code);
+      console.error("Error message:", error.message);
+      console.error("Error details:", error.details);
+      alert("Failed to save food entry. Please check the console for details.");
     } else {
       console.log("Food entry saved:", data);
       setFoodEntries([...foodEntries, data[0]]);
       setNewFood({ calories: '', protein: '', carbs: '', fat: '' });
       setImagePreviewUrl(null);
       setImageFile(null);
+      setFoodDescription('');
       setIsOpen(false);
-      // Close the dialog here (you might need to implement a close function)
     }
+    
   };
 
   const handleClose = () => {
@@ -171,11 +199,18 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   return (
     <>
       <Button
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg"
-        style={{ backgroundColor: '#10B981' }}
+        className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center justify-center space-x-3 px-6 py-3 rounded-full shadow-lg text-xl font-semibold"
+        style={{ backgroundColor: '#10B981', minWidth: '220px', minHeight: '64px' }}
         onClick={() => setIsOpen(true)}
       >
-        <Plus size={24} color="white" />
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 3H5C3.89543 3 3 3.89543 3 5V7" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M17 3H19C20.1046 3 21 3.89543 21 5V7" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M16 12L12 12M12 12L8 12M12 12L12 8M12 12L12 16" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M7 21H5C3.89543 21 3 20.1046 3 19V17" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M17 21H19C20.1046 21 21 20.1046 21 19V17" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+        </svg>
+        <span className="text-white">Scan food</span>
       </Button>
       <AnimatePresence>
         {isOpen && (
