@@ -37,6 +37,11 @@ export default function SettingsComponent({ onClose, isOpen }: SettingsProps) {
             mass: 0.8,
           }}
           className="fixed inset-y-0 right-0 w-full max-w-md bg-gray-100 z-50 overflow-auto"
+          style={{
+            height: 'var(--app-height, 100vh)',
+            paddingTop: 'env(safe-area-inset-top)',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          } as React.CSSProperties}
         >
           <div className="flex flex-col min-h-screen p-4">
             <header className="flex justify-between items-center mb-6">

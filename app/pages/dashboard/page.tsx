@@ -85,7 +85,7 @@ export default function NutritionTracker() {
 
   return (
     <ProtectedLayout>
-      <div className="flex h-screen bg-gray-100">
+      <div className="flex h-screen bg-gray-100 main-container">
         {/* Navigation Menu - Desktop */}
         <nav className="hidden md:flex flex-col justify-between w-20 bg-white p-4">
           <div className="space-y-8">
@@ -118,7 +118,7 @@ export default function NutritionTracker() {
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-10"
+            className="absolute top-safe right-4 z-10"
             onClick={() => setIsSettingsOpen(true)}
           >
             <Settings size={24} />
