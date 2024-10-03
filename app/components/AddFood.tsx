@@ -51,7 +51,7 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
         await processImage(compressedFile);
       } catch (error) {
         console.error('Error processing image:', error);
-        alert('Failed to process the image. Please ry again.');
+        alert('Failed to process the image. Please try again.');
       } finally {
         setLoading(false);
       }
