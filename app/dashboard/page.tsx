@@ -83,7 +83,8 @@ export default function NutritionTracker() {
       fetchDailyIntakes();
       fetchFoodEntries()
     }
-  }, [user, selectedDate]);
+  }, [selectedDate]);
+
 
   const fetchDailyIntakes = async () => {
   if (!user) {
