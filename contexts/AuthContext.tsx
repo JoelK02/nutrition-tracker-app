@@ -7,14 +7,16 @@ import { Session, User } from '@supabase/supabase-js'
 interface AuthContextType {
   user: User | null
   session: Session | null
+  loading: boolean
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, session: null })
+const AuthContext = createContext<AuthContextType>({ user: null, session: null, loading: true })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const session = useSession()
   const supabase = useSupabaseClient()
   const [user, setUser] = useState<User | null>(session?.user ?? null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     console.log('AuthProvider useEffect - session:', session)
@@ -23,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setUser(null)
     }
+    setLoading(false)
   }, [session])
 
   useEffect(() => {
@@ -30,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       async (event, session) => {
         console.log('Auth state changed:', event, session)
         setUser(session?.user ?? null)
+        setLoading(false)
       }
     )
 
@@ -39,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [supabase.auth])
 
   return (
-    <AuthContext.Provider value={{ user, session }}>
+    <AuthContext.Provider value={{ user, session, loading }}>
       {children}
     </AuthContext.Provider>
   )

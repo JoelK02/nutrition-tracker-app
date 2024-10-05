@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -10,7 +10,7 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!loading && !session) {
-      router.push('/sign-in')
+      router.push('/')
     }
   }, [session, loading, router])
 
@@ -18,5 +18,9 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
     return <div>Loading...</div>
   }
 
-  return session ? <>{children}</> : null
+  if (!session) {
+    return null // or a loading spinner if you prefer
+  }
+
+  return <>{children}</>
 }
