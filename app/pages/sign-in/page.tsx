@@ -20,7 +20,7 @@ export default function SignIn() {
 
   useEffect(() => {
     if (session) {
-      router.push('/pages/dashboard') // Redirect to dashboard if already signed in
+      router.push('/dashboard') // Redirect to dashboard if already signed in
     }
   }, [session, router])
 
