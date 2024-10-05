@@ -3,9 +3,21 @@
 import React from 'react'
 import { Menu, X, Facebook, Twitter, Instagram } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext'
+import { useEffect } from 'react';
 
 export default function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
+  
+  const { session } = useAuth()
+  const router = useRouter() 
+
+  useEffect(() => {
+    if (session) {
+      router.push('/dashboard') // Redirect to dashboard if already signed in
+    }
+  }, [session, router])
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">

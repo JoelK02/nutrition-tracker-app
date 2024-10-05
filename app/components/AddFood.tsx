@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Plus, ArrowLeft, Camera } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { v4 as uuidv4 } from 'uuid';
+import { useUser } from '@supabase/auth-helpers-react';
 
 export interface FoodEntry {
   id: number;
@@ -21,9 +22,11 @@ export interface FoodEntry {
 interface AddFoodProps {
   foodEntries: FoodEntry[];
   setFoodEntries: React.Dispatch<React.SetStateAction<FoodEntry[]>>;
+  editingEntry: FoodEntry | null;
+  setEditingEntry: React.Dispatch<React.SetStateAction<FoodEntry | null>>;
 }
 
-const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
+const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries, editingEntry, setEditingEntry }) => {
   const [newFood, setNewFood] = useState({
     calories: '',
     protein: '',
@@ -37,7 +40,21 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [foodDescription, setFoodDescription] = useState<string>('');
-  
+  const user = useUser();
+
+  useEffect(() => {
+    if (editingEntry) {
+      setIsOpen(true);
+      setNewFood({
+        calories: editingEntry.calories.toString(),
+        protein: editingEntry.protein.toString(),
+        carbs: editingEntry.carbs.toString(),
+        fat: editingEntry.fat.toString()
+      });
+      setFoodDescription(editingEntry.food_description || '');
+      setImagePreviewUrl(editingEntry.food_image || null);
+    }
+  }, [editingEntry]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -131,11 +148,16 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
 
   };
 
-  const handleAddFood = async () => {
+  const handleAddOrUpdateFood = async () => {
     const parsedCalories = parseInt(newFood.calories, 10);
     const parsedProtein = parseInt(newFood.protein, 10);
     const parsedCarbs = parseInt(newFood.carbs, 10);
     const parsedFat = parseInt(newFood.fat, 10);
+
+    if (!user) {
+      alert("You must be logged in to add or update food entries.");
+      return;
+    }
 
     if (isNaN(parsedCalories) || isNaN(parsedProtein) || isNaN(parsedCarbs) || isNaN(parsedFat)) {
       alert("Please enter valid numbers for calories, protein, carbs, and fat.");
@@ -160,40 +182,56 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
       imagePath = uploadData?.path;
     }
 
-    const newEntry = {
+    const foodData = {
       calories: parsedCalories,
       protein: parsedProtein,
       carbs: parsedCarbs,
       fat: parsedFat,
       food_description: foodDescription,
       food_image: imagePath,
+      user_id: user.id
     };
 
-    const { data, error } = await supabase
-      .from("food_entries")
-      .insert([newEntry])
-      .select();
+    if (editingEntry) {
+      const { data, error } = await supabase
+        .from("food_entries")
+        .update(foodData)
+        .eq('id', editingEntry.id)
+        .select();
 
-    if (error) {
-      console.error("Detailed error:", error);
-      console.error("Error code:", error.code);
-      console.error("Error message:", error.message);
-      console.error("Error details:", error.details);
-      alert("Failed to save food entry. Please check the console for details.");
+      if (error) {
+        console.error("Error updating food entry:", error);
+        alert("Failed to update food entry. Please try again.");
+      } else {
+        setFoodEntries(prevEntries =>
+          prevEntries.map(entry => entry.id === editingEntry.id ? data[0] : entry)
+        );
+      }
     } else {
-      console.log("Food entry saved:", data);
-      setFoodEntries([...foodEntries, data[0]]);
-      setNewFood({ calories: '', protein: '', carbs: '', fat: '' });
-      setImagePreviewUrl(null);
-      setImageFile(null);
-      setFoodDescription('');
-      setIsOpen(false);
+      const { data, error } = await supabase
+        .from("food_entries")
+        .insert([foodData])
+        .select();
+
+      if (error) {
+        console.error("Error adding food entry:", error);
+        alert("Failed to add food entry. Please try again.");
+      } else {
+        setFoodEntries([...foodEntries, data[0]]);
+      }
     }
+
+    handleClose();
     
   };
 
   const handleClose = () => {
     setIsOpen(false);
+    setNewFood({ calories: '', protein: '', carbs: '', fat: '' });
+    setImagePreviewUrl(null);
+    setImageFile(null);
+    setFoodDescription('');
+    setEditingEntry(null);
   };
 
   return (
@@ -285,10 +323,10 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries }) => {
               />
               <div className="mt-6 space-y-4">
                 <Button onClick={() => fileInputRef.current?.click()} className="w-full" disabled={loading}>
-                  {loading ? 'Processing...' : (imageFile ? 'Change Image' : 'Select Image')}
+                  {loading ? 'Processing...' : (imageFile || editingEntry?.food_image ? 'Change Image' : 'Select Image')}
                 </Button>
-                <Button onClick={handleAddFood} className="w-full bg-green-500 hover:bg-green-600 text-white" disabled={loading}>
-                  Add Food Entry
+                <Button onClick={handleAddOrUpdateFood} className="w-full bg-green-500 hover:bg-green-600 text-white" disabled={loading}>
+                  {editingEntry ? 'Update Food Entry' : 'Add Food Entry'}
                 </Button>
               </div>
             </div>

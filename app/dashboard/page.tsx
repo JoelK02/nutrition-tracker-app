@@ -18,14 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { FoodEntry } from '../../components/AddFood'; // Import the FoodEntry interface
+import { FoodEntry } from '../components/AddFood'; // Import the FoodEntry interface
 
-import NavItem from '../../components/NavItem'
-import CircularProgressBar from '../../components/CircularProgressBar'
-import NutrientBar from '../../components/NutrientBar'
-import AnalyticsSection from '../../components/Analytics';
-import AddFood from '../../components/AddFood';
-import SettingsComponent from '../../components/Settings';
+import NavItem from '../components/NavItem'
+import CircularProgressBar from '../components/CircularProgressBar'
+import NutrientBar from '../components/NutrientBar'
+import AnalyticsSection from '../components/Analytics';
+import AddFood from '../components/AddFood';
+import SettingsComponent from '../components/Settings';
+import { useUser } from '@supabase/auth-helpers-react';
+import DateSelector from '../components/DateSelector';
 
 const foodEntriesDefault = [
   { id: 1, calories: 350, protein: 20, carbs: 40, fat: 15, created_at: '2023-09-14T12:00:00Z', food_image: 'food-images/1.jpg', food_description: 'Chicken Parmesan' },
@@ -41,9 +43,19 @@ function getImageUrl(path: string | null) {
 }
 
 export default function NutritionTracker() {
+  const user = useUser();
+
+  const [dailyIntakes, setDailyIntakes] = useState({
+    calories: 2000,
+    protein: 50,
+    carbs: 250,
+    fat: 70
+  });
+
   const [foodEntries, setFoodEntries] = useState<FoodEntry[]>(foodEntriesDefault)
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<FoodEntry | null>(null);
 
   // Filter entries for today
   const today = new Date().toLocaleDateString('en-GB') // Use current date in 'DD/MM/YYYY' format
@@ -58,23 +70,64 @@ export default function NutritionTracker() {
   const totalCarbs = todayEntries.reduce((sum, entry) => sum + entry.carbs, 0)
   const totalFat = todayEntries.reduce((sum, entry) => sum + entry.fat, 0)
 
+  const [selectedDate, setSelectedDate] = useState(new Date())
+
   // Daily recommended nutrient targets (you can modify these as needed)
   const maxCalories = 2000
   const maxProtein = 100
   const maxCarbs = 250
   const maxFat = 80
 
+  useEffect(() => {
+    if (user) {
+      fetchDailyIntakes();
+      fetchFoodEntries()
+    }
+  }, [user, selectedDate]);
+
+  const fetchDailyIntakes = async () => {
+  if (!user) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('daily_intakes')
+    .eq('user_id', user.id);
+
+  if (error) {
+    console.error('Error fetching daily intakes:', error);
+  } else {
+    if (data && data.length > 0) {
+      setDailyIntakes(data[0].daily_intakes);
+    } else {
+      console.log('No settings found for user. Using default values.');
+      // Optionally, you could set default values here;
+    }
+  }
+};
+
   // Function to fetch food entries from Supabase
   const fetchFoodEntries = async () => {
+    if (!user) {
+      return;
+    }
+    const startOfDay = new Date(selectedDate)
+    startOfDay.setHours(0, 0, 0, 0)
+    const endOfDay = new Date(selectedDate)
+    endOfDay.setHours(23, 59, 59, 999)
+  
     const { data, error } = await supabase
       .from('food_entries')
-      .select('*')  // Fetch all columns
-
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('created_at', startOfDay.toISOString())
+      .lte('created_at', endOfDay.toISOString());
+  
     if (error) {
       console.error('Error fetching food entries:', error.message)
     } else {
       setFoodEntries(data)
-      console.log(data)  // Update state with fetched data
     }
   }
 
@@ -82,6 +135,15 @@ export default function NutritionTracker() {
   useEffect(() => {
     fetchFoodEntries()
   }, [])  // Empty dependency array means this runs once on component mount
+
+  const handleEditEntry = (entry: FoodEntry) => {
+    setEditingEntry(entry);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date)
+    fetchFoodEntries()
+  }
 
   return (
     <ProtectedLayout>
@@ -103,7 +165,6 @@ export default function NutritionTracker() {
                 </nav>
               </SheetContent>
             </Sheet>
-            <h1 className="text-2xl font-semibold">Nutrition Tracker</h1>
             <Button
               variant="ghost"
               size="icon"
@@ -115,20 +176,46 @@ export default function NutritionTracker() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 pt-safe mt-16 pb-4 overflow-y-auto">
+        <main className="flex-1 px-4 pt-safe mt-20 pb-4 overflow-y-auto">
+
+          <div className="mb-4 mt-1"> {/* Added margin-bottom for spacing */}
+            <DateSelector selectedDate={selectedDate} onDateSelect={handleDateSelect} />
+          </div>
+
           {/* Today's Summary */}
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8 mt-4">
             <h2 className="text-lg font-semibold mb-4">Today&apos;s Summary</h2>
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="mb-6 md:mb-0">
                 {/* Update CircularProgressBar to reflect today's total calories */}
-                <CircularProgressBar value={totalCalories} max={maxCalories} />
+                <CircularProgressBar value={totalCalories} max={dailyIntakes.calories} />
               </div>
               <div className="w-full md:w-1/2 space-y-4">
-                {/* Update NutrientBars to reflect today's total nutrients */}
-                <NutrientBar label="Protein" value={totalProtein} max={maxProtein} color="bg-blue-400" />
-                <NutrientBar label="Carbs" value={totalCarbs} max={maxCarbs} color="bg-yellow-400" />
-                <NutrientBar label="Fat" value={totalFat} max={maxFat} color="bg-red-400" />
+              <div className="w-full md:w-1/2 space-y-4">
+
+                  <NutrientBar 
+                    label="Protein" 
+                    value={totalProtein} 
+                    max={dailyIntakes.protein} 
+                    color="bg-red-400" 
+                    icon="🍗"
+                  />
+                  <NutrientBar 
+                    label="Fat" 
+                    value={totalFat} 
+                    max={dailyIntakes.fat} 
+                    color="bg-blue-400" 
+                    icon="🥑"
+                  />
+                  <NutrientBar 
+                    label="Carbs" 
+                    value={totalCarbs} 
+                    max={dailyIntakes.carbs} 
+                    color="bg-yellow-400" 
+                    icon="🍞"
+                  />
+                  
+                </div>
               </div>
             </div>
           </div>
@@ -137,7 +224,7 @@ export default function NutritionTracker() {
           <div className="space-y-4">
             <h2 className="text-xl font-semibold mb-4">Recently Consumed</h2>
             {todayEntries.map((entry) => (
-              <div key={entry.id} className="bg-white rounded-lg p-4 shadow-sm">
+              <div key={entry.id} className="bg-white rounded-lg p-4 shadow-sm cursor-pointer" onClick={() => handleEditEntry(entry)}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
                     {entry.food_image && (
@@ -190,7 +277,12 @@ export default function NutritionTracker() {
         </main>
         
         {/* Use the new AddFood component */}
-        <AddFood foodEntries={foodEntries} setFoodEntries={setFoodEntries} />
+        <AddFood 
+          foodEntries={foodEntries} 
+          setFoodEntries={setFoodEntries} 
+          editingEntry={editingEntry}
+          setEditingEntry={setEditingEntry}
+        />
       </div>
 
       {/* Settings Component */}
