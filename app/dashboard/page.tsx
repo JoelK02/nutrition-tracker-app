@@ -80,16 +80,17 @@ export default function NutritionTracker() {
 
   useEffect(() => {
     if (user) {
+      alert('user')
       fetchDailyIntakes();
       fetchFoodEntries()
     }
-  }, [selectedDate]);
+  }, [user, selectedDate]);
 
 
   const fetchDailyIntakes = async () => {
-  if (!user) {
-    return;
-  }
+    if (!user) {
+      return;
+    }
 
   const { data, error } = await supabase
     .from('user_settings')
