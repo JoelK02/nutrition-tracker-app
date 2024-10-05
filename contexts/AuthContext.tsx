@@ -1,34 +1,48 @@
-"use client"
+'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabaseClient'
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
+import { Session, User } from '@supabase/supabase-js'
 
-type AuthContextType = {
+interface AuthContextType {
+  user: User | null
   session: Session | null
-  loading: boolean
 }
 
-const AuthContext = createContext<AuthContextType>({ session: null, loading: true })
+const AuthContext = createContext<AuthContextType>({ user: null, session: null })
 
-export const useAuth = () => useContext(AuthContext)
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const session = useSession()
+  const supabase = useSupabaseClient()
+  const [user, setUser] = useState<User | null>(session?.user ?? null)
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setLoading(false)
-    })
+    console.log('AuthProvider useEffect - session:', session)
+    if (session) {
+      setUser(session.user)
+    } else {
+      setUser(null)
+    }
+  }, [session])
 
-    return () => subscription.unsubscribe()
-  }, [])
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session)
+        setUser(session?.user ?? null)
+      }
+    )
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
+  }, [supabase.auth])
 
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ user, session }}>
       {children}
     </AuthContext.Provider>
   )
 }
+
+export const useAuth = () => useContext(AuthContext)

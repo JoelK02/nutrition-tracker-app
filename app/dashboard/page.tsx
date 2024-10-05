@@ -80,21 +80,11 @@ export default function NutritionTracker() {
 
   useEffect(() => {
     if (user) {
-      alert('user')
       fetchDailyIntakes();
       fetchFoodEntries()
     }
   }, [user, selectedDate]);
 
-  useEffect(() => {
-    console.log('Dashboard useEffect running')
-    console.log('User:', user)
-    if (user) {
-      console.log('Fetching food entries')
-      fetchFoodEntries()
-      // ... other fetch functions
-    }
-  }, [user])
 
 
   const fetchDailyIntakes = async () => {

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientLayout from './ClientLayout';
-
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,11 +19,18 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createServerComponentClient({ cookies })
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  console.log('RootLayout server-side session:', session) // Add this log
+
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ClientLayout>
+        <ClientLayout  serverSession={session}>
           {children}
         </ClientLayout>
       </body>
