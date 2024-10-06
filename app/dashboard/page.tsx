@@ -58,32 +58,23 @@ export default function NutritionTracker() {
   const [editingEntry, setEditingEntry] = useState<FoodEntry | null>(null);
 
   // Filter entries for today
-  const today = new Date().toLocaleDateString('en-GB') // Use current date in 'DD/MM/YYYY' format
-  const todayEntries = foodEntries.filter(entry => {
-    const entryDate = new Date(entry.created_at).toLocaleDateString('en-GB')
-    return entryDate === today
-  })
+
 
   // Calculate total nutrients for today
-  const totalCalories = todayEntries.reduce((sum, entry) => sum + entry.calories, 0)
-  const totalProtein = todayEntries.reduce((sum, entry) => sum + entry.protein, 0)
-  const totalCarbs = todayEntries.reduce((sum, entry) => sum + entry.carbs, 0)
-  const totalFat = todayEntries.reduce((sum, entry) => sum + entry.fat, 0)
+  const totalCalories = Math.round(foodEntries.reduce((sum, entry) => sum + entry.calories, 0))
+  const totalProtein = Math.round(foodEntries.reduce((sum, entry) => sum + entry.protein, 0))
+  const totalCarbs = Math.round(foodEntries.reduce((sum, entry) => sum + entry.carbs, 0))
+  const totalFat = Math.round(foodEntries.reduce((sum, entry) => sum + entry.fat, 0))
 
   const [selectedDate, setSelectedDate] = useState(new Date())
 
-  // Daily recommended nutrient targets (you can modify these as needed)
-  const maxCalories = 2000
-  const maxProtein = 100
-  const maxCarbs = 250
-  const maxFat = 80
 
   useEffect(() => {
     if (user) {
       fetchDailyIntakes();
       fetchFoodEntries()
     }
-  }, [user, selectedDate]);
+}, [user, selectedDate]);
 
 
 
@@ -112,12 +103,17 @@ export default function NutritionTracker() {
   // Function to fetch food entries from Supabase
   const fetchFoodEntries = async () => {
     if (!user) {
+      console.log('No user, skipping fetch');
       return;
     }
     const startOfDay = new Date(selectedDate)
     startOfDay.setHours(0, 0, 0, 0)
     const endOfDay = new Date(selectedDate)
     endOfDay.setHours(23, 59, 59, 999)
+  
+    console.log('Fetching entries for date:', selectedDate);
+    console.log('Start of day:', startOfDay.toISOString());
+    console.log('End of day:', endOfDay.toISOString());
   
     const { data, error } = await supabase
       .from('food_entries')
@@ -129,22 +125,18 @@ export default function NutritionTracker() {
     if (error) {
       console.error('Error fetching food entries:', error.message)
     } else {
+      console.log('Fetched entries:', data);
       setFoodEntries(data)
     }
   }
 
-  // Use useEffect to fetch data when the component mounts
-  useEffect(() => {
-    fetchFoodEntries()
-  }, [])  // Empty dependency array means this runs once on component mount
-
+  
   const handleEditEntry = (entry: FoodEntry) => {
     setEditingEntry(entry);
   };
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date)
-    fetchFoodEntries()
   }
 
   return (
@@ -154,11 +146,7 @@ export default function NutritionTracker() {
         <header className="fixed top-0 left-0 right-0 bg-white z-50 shadow-sm">
           <div className="flex items-center justify-between px-4 h-16 pt-safe">
             <Sheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu size={24} />
-                </Button>
-              </SheetTrigger>
+              <h1 className="text-2xl font-bold">NutriTrack</h1>
               <SheetContent side="left" className="w-[300px] sm:w-[400px]">
                 <nav className="flex flex-col gap-4">
                   <NavItem icon={<PieChart size={24} />} label="Home" active />
@@ -225,7 +213,7 @@ export default function NutritionTracker() {
           {/* Food Entries */}
           <div className="space-y-4">
             <h2 className="text-xl font-semibold mb-4">Recently Consumed</h2>
-            {todayEntries.map((entry) => (
+            {foodEntries.map((entry) => (
               <div key={entry.id} className="bg-white rounded-lg p-4 shadow-sm cursor-pointer" onClick={() => handleEditEntry(entry)}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">

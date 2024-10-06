@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { v4 as uuidv4 } from 'uuid';
 import { useUser } from '@supabase/auth-helpers-react';
 
+
 export interface FoodEntry {
   id: number;
   calories: number;
@@ -52,7 +53,17 @@ const AddFood: React.FC<AddFoodProps> = ({ foodEntries, setFoodEntries, editingE
         fat: editingEntry.fat.toString()
       });
       setFoodDescription(editingEntry.food_description || '');
-      setImagePreviewUrl(editingEntry.food_image || null);
+      
+      // Construct the full image URL
+      if (editingEntry.food_image) {
+        const { data } = supabase.storage
+          .from('food-images')
+          .getPublicUrl(editingEntry.food_image);
+        
+        setImagePreviewUrl(data.publicUrl);
+      } else {
+        setImagePreviewUrl(null);
+      }
     }
   }, [editingEntry]);
 

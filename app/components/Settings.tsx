@@ -7,6 +7,7 @@ import { Slider } from "@/components/ui/slider"
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '@/lib/supabaseClient'
 import { useUser } from '@supabase/auth-helpers-react' // Make sure to install this package
+import { useRouter } from 'next/navigation'
 
 interface SettingsProps {
   onClose: () => void;
@@ -21,12 +22,28 @@ export default function SettingsComponent({ onClose, isOpen }: SettingsProps) {
     fat: 84
   })
   const user = useUser()
+  const router = useRouter()
 
   useEffect(() => {
     if (user) {
       fetchUserSettings()
     }
   }, [user])
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Error logging out:', error)
+      alert({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      })
+    } else {
+      router.push('/pages/sign-in') // Redirect to login page after logout
+      onClose() // Close the settings panel
+    }
+  }
 
   const fetchUserSettings = async () => {
     if (!user) return
@@ -160,6 +177,12 @@ export default function SettingsComponent({ onClose, isOpen }: SettingsProps) {
                 onClick={saveSettings}
               >
                 Save Settings
+              </Button>
+              <Button 
+                className="w-full bg-red-600 text-white py-6 text-lg rounded-xl shadow-lg mt-4"
+                onClick={handleLogout}
+              >
+                Logout
               </Button>
             </main>
           </div>

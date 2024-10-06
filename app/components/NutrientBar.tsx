@@ -19,7 +19,7 @@ const NutrientBar: React.FC<NutrientBarProps> = ({ label, value, max, color, ico
           <span className="font-medium">{label}</span>
         </div>
         <span className="text-sm text-gray-600">
-          {value.toFixed(1)} / {max}g
+          {value} / {max}g
         </span>
       </div>
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
