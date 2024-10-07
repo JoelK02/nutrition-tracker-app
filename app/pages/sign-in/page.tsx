@@ -42,6 +42,20 @@ export default function SignIn() {
     setLoading(false)
   }
 
+  const handleGoogleSignIn = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`
+      }
+    })
+
+    if (error) {
+      console.error('Error signing in with Google:', error)
+      setError(error.message)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       <header className="bg-white p-4 flex items-center">
@@ -108,6 +122,19 @@ export default function SignIn() {
               Sign up
             </a>
           </p>
+        </div>
+
+        <div className="mt-6">
+          <Button 
+            onClick={handleGoogleSignIn} 
+            variant="outline" 
+            className="w-full h-12 text-base flex items-center justify-center"
+          >
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+              {/* Google logo SVG */}
+            </svg>
+            Continue with Google
+          </Button>
         </div>
       </main>
     </div>

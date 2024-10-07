@@ -1,49 +1,33 @@
-'use client'
-
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react'
-import { Session, User } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { User, Session } from '@supabase/supabase-js'
+import { supabase } from '@/lib/supabaseClient'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
-  loading: boolean
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, session: null, loading: true })
+const AuthContext = createContext<AuthContextType>({ user: null, session: null })
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const session = useSession()
-  const supabase = useSupabaseClient()
-  const [user, setUser] = useState<User | null>(session?.user ?? null)
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    console.log('AuthProvider useEffect - session:', session)
-    if (session) {
-      setUser(session.user)
-    } else {
-      setUser(null)
-    }
-    setLoading(false)
-  }, [session])
+  const [user, setUser] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session)
+        setSession(session)
         setUser(session?.user ?? null)
-        setLoading(false)
       }
     )
 
     return () => {
       authListener.subscription.unsubscribe()
     }
-  }, [supabase.auth])
+  }, [])
 
   return (
-    <AuthContext.Provider value={{ user, session, loading }}>
+    <AuthContext.Provider value={{ user, session }}>
       {children}
     </AuthContext.Provider>
   )
