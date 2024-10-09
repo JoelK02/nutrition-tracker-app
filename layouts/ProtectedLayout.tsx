@@ -10,13 +10,16 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     if (!loading && !session) {
-      router.push('/')
+      router.push('/pages/sign-in')
     }
   }, [session, loading, router])
 
+  if (loading) {
+    return <div>Loading...</div>
+  }
 
   if (!session) {
-    return null // or a loading spinner if you prefer
+    return null
   }
 
   return <>{children}</>

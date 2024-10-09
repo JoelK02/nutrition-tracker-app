@@ -17,23 +17,26 @@ export default function ClientLayout({
   const router = useRouter();
 
   useEffect(() => {
-    console.log('ClientLayout useEffect - serverSession:', serverSession)
-    if (serverSession) {
-      console.log('User is signed in:', serverSession.user)
-      if (window.location.pathname === '/') {
-        router.push('/dashboard')
-      }
-    } else {
-      console.log('No user signed in')
-      if (window.location.pathname !== '/') {
-        router.push('/')
+    const handleAuthChange = async (event: string, session: Session | null) => {
+      if (event === 'SIGNED_IN' && session) {
+        console.log('User signed in:', session.user)
+        await router.push('/dashboard')
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out')
+        await router.push('/')
       }
     }
-  }, [serverSession, router])
+
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(handleAuthChange)
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabaseClient, router])
 
   return (
     <SessionContextProvider supabaseClient={supabaseClient} initialSession={serverSession}>
-      <AuthProvider>
+      <AuthProvider initialSession={serverSession}>
         {children}
       </AuthProvider>
     </SessionContextProvider>

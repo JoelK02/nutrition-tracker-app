@@ -25,12 +25,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     data: { session },
   } = await supabase.auth.getSession()
 
-  console.log('RootLayout server-side session:', session) // Add this log
+  console.log('RootLayout server-side session:', session)
 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ClientLayout  serverSession={session}>
+        <ClientLayout serverSession={session}>
           {children}
         </ClientLayout>
       </body>
